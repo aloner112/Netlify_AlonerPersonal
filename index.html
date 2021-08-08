@@ -1,6 +1,8 @@
 <html>
     <head>
-        <!--<link rel="stylesheet" href="styles.css">-->
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-firestore.js"></script>
     </head>
     <body>
 
@@ -13,5 +15,25 @@
             <ul id="myList01"></ul>
 
         </div>
+        
+
+        <!-- TODO: Add SDKs for Firebase products that you want to use
+            https://firebase.google.com/docs/web/setup#available-libraries -->
+
+        <script>
+            // Your web app's Firebase configuration
+            var firebaseConfig = {
+                apiKey: "AIzaSyA1bx557qyLx99N-9OXIl--ZdmUg0cQyCs",
+                authDomain: "sanguopriere.firebaseapp.com",
+                projectId: "sanguopriere",
+                storageBucket: "sanguopriere.appspot.com",
+                messagingSenderId: "1028390253263",
+                appId: "1:1028390253263:web:b7268b8a88ac72a57cfdba"
+            };
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            var db = firebase.firestore();
+            db.settings( { timestampsInSnapshots: true } );
+        </script>
     </body>
 </html>
