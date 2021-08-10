@@ -23,6 +23,7 @@ function fillPlayersData(doc){
 }
 
 db.collection('PlayerDatas').get().then( snapshot => {
+    console.log(snapshot);
     snapshot.docs.forEach(doc => {
         fillPlayersData(doc);
     });
