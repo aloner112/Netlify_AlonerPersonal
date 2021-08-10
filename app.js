@@ -1,4 +1,4 @@
-const playerDataList = document.querySelector('#playerDataList');
+const playerDataList = document.querySelector('#content');
 
 function fillPlayersData(doc){
     let playerName = doc.data().PlayerName;
