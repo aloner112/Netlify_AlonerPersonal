@@ -17,7 +17,9 @@ function fillPlayersData(doc){
     div.appendChild(title);
     div.appendChild(pGuild);
     div.appendChild(pComment);
-    playerDataList.appendChild(div);
+    playerDataList.appendChild(title);
+    playerDataList.appendChild(pGuild);
+    playerDataList.appendChild(comment);
 }
 
 db.collection('PlayerDatas').get().then( snapshot => {
