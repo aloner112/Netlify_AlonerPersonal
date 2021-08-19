@@ -3,7 +3,7 @@
         <!-- The core Firebase JS SDK is always required and must be listed first -->
         <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-app.js"></script>
         <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-firestore.js"></script>
-        
+        <meta charset="UTF-8">
     </head>
     <body>
 
@@ -12,7 +12,12 @@
         <div class="content">
             
 
-            <form id="myForm01"></form>
+            <form id="addPlayerData">
+                <input type="text" name="PlayerName" placeholder="Player Name">
+                <input type="text" name="GuildName" placeholder="Guild Name"><br>
+                <input type="text" name="Comment" placeholder="Comment" style="line-height: 9px; width: 400px">
+                <button>Add Player Data</button>
+            </form>
 
             <div id="playerDataList" style="line-height: 5px;"></div>
 
