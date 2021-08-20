@@ -196,13 +196,11 @@ formPlayerData.addEventListener('submit', (e)=>{
 })
 
 function addTeam(id, man1, lv1, kind1, man2, lv2, kind2, man3, lv3, kind3){
+    console.log('addTeam');
     let teamContent = man1+','+lv1+','+kind1+','+man2+','+lv2+','+kind2+','+man3+','+lv3+','+kind3;
-    db.collection('PlayerDatas').doc(id).then( (playerData) =>{
-        let teamsData = playerData.data().Teams;
-        teamsData.push(teamContent);
-        db.collection('PlayerDatas').doc(id).set({
-            Teams: teamsData
-        })
+    let pData = db.collection('PlayerDatas').doc(id);
+    pData.update({
+        Teams: firebase.firestore.FieldValue.arrayUnion(teamContent)
     }).then( () =>{
         window.location.reload();
     } )
