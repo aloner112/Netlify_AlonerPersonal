@@ -144,10 +144,20 @@ function fillPlayersData(doc){
 
     addTeamForm,addEventListener('submit', (e) =>{
         e.preventDefault();
-        let pId = addTeamForm.getAttribute('pId');
-        addTeam(pId, addTeamForm.man1.value, addTeamForm.lv1.value, addTeamForm.kind1.value,
-            addTeamForm.man2.value, addTeamForm.lv2.value, addTeamForm.kind2.value,
-            addTeamForm.man3.value, addTeamForm.lv3.value, addTeamForm.kind3.value);
+        // 在 event listener 裡，e.target 就是被按下 submit 的那個 form
+        let thisForm = e.target;
+        addTeam(
+            thisForm.getAttribute('pId'),
+            thisForm.man1.value,
+            thisForm.lv1.value,
+            thisForm.kind1.value,
+            thisForm.man2.value,
+            thisForm.lv2.value,
+            thisForm.kind2.value,
+            thisForm.man3.value,
+            thisForm.lv3.value,
+            thisForm.kind3.value
+        );
     })
 
     div.appendChild(title);
