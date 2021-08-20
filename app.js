@@ -144,7 +144,8 @@ function fillPlayersData(doc){
 
     addTeamForm,addEventListener('submit', (e) =>{
         e.preventDefault();
-        addTeam(doc.id, addTeamForm.man1.value, addTeamForm.lv1.value, addTeamForm.kind1.value,
+        let pId = addTeamForm.getAttribute('pId');
+        addTeam(pId, addTeamForm.man1.value, addTeamForm.lv1.value, addTeamForm.kind1.value,
             addTeamForm.man2.value, addTeamForm.lv2.value, addTeamForm.kind2.value,
             addTeamForm.man3.value, addTeamForm.lv3.value, addTeamForm.kind3.value);
     })
