@@ -142,7 +142,7 @@ function fillPlayersData(doc){
     addTeamForm.appendChild(kind3);
     addTeamForm.appendChild(addTeamButton);
 
-    addTeamForm,addEventListener('submit', (e) =>{
+    addTeamForm.addEventListener('submit', (e) =>{
         e.preventDefault();
         // 在 event listener 裡，e.target 就是被按下 submit 的那個 form
         let thisForm = e.target;
