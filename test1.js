@@ -1,3 +1,3 @@
 const myDiv = document.querySelector('#myDiv');
 
-myDiv.addEventListener('click', ()=>{myDiv.textContent += 'dSS';});
+myDiv.addEventListener('click', ()=>{myDiv.textContent += 'dA';});
