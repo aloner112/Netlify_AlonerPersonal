@@ -214,4 +214,6 @@ var gotPlayerData = async () => {
 }
 */
 
-
+/*
+CSS 名稱前面寫 . 是抓class，寫 # 是抓 ID
+*/
