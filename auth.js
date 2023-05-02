@@ -10,8 +10,8 @@ const firebaseConfig = {
   firebase.initializeApp(firebaseConfig);
   
   // 登錄表單
-  const form = document.querySelector('form');
-  form.addEventListener('submit', (event) => {
+  const form = document.querySelector('#authForm');
+  form.addEventListener('login', (event) => {
     event.preventDefault();
     const email = form.email.value;
     const password = form.password.value;
@@ -23,5 +23,21 @@ const firebaseConfig = {
       .catch((error) => {
         // 登錄失敗，請參考 Firebase 文檔查看可能的錯誤原因
         console.error('登錄失敗:', error);
+      });
+  });
+  form.addEventListener('signup', (event) => {
+    event.preventDefault();
+    const email = form.email.value;
+    const password = form.password.value;
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Signed in 
+        var user = userCredential.user;
+        // ...
+      })
+      .catch((error) => {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // ..
       });
   });
