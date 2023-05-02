@@ -1,3 +1,5 @@
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 // 初始化 Firebase 應用程序
 const firebaseConfig = {
   apiKey: "AIzaSyArRwODvp0wTYoK6auatnEorH872xRFdEw",
@@ -8,7 +10,7 @@ const firebaseConfig = {
   appId: "1:941306290489:web:05c1556e6a4ff1f9ed08e8",
   measurementId: "G-026DDW5KPL"
   };
-  firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
   
   const title = document.querySelector('#title');
   // 登錄表單
@@ -46,4 +48,8 @@ const firebaseConfig = {
         title.textContent = '註冊失敗'
         // ..
       });
+  });
+  form.addEventListener('changeTitle', (event) => {
+    event.preventDefault();
+    title.textContent += 'a';
   });

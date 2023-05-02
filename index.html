@@ -6,13 +6,11 @@
     <!-- 引入 Firebase JavaScript SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-firestore.js"></script>
-    <!-- 引入 auth.js 文件 -->
-    <script src="auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-firestore.js"></script>    
   </head>
   <body>
-    <h1>Firebase 登錄範例</h1>
-    <form>
+    <h1 id="title">Firebase 登錄範例</h1>
+    <form id="authForm">
       <div>
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required>
@@ -23,6 +21,9 @@
       </div>
       <button type="login">登入</button>
 	  <button type="signup">註冊</button>
+    <button type="changeTitle">改變標題</button>
     </form>
   </body>
+  <!-- 引入 auth.js 文件 -->
+  <script src="auth.js"></script>
 </html>
