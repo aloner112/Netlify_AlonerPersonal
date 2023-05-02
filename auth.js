@@ -1,15 +1,3 @@
-// 初始化 Firebase 應用程序
-const firebaseConfig = {
-  apiKey: "AIzaSyArRwODvp0wTYoK6auatnEorH872xRFdEw",
-  authDomain: "aloner-avg-scenario-editor.firebaseapp.com",
-  projectId: "aloner-avg-scenario-editor",
-  storageBucket: "aloner-avg-scenario-editor.appspot.com",
-  messagingSenderId: "941306290489",
-  appId: "1:941306290489:web:05c1556e6a4ff1f9ed08e8",
-  measurementId: "G-026DDW5KPL"
-  };
-firebase.initializeApp(firebaseConfig);
-  
   const title = document.querySelector('#title');
   // 登錄表單
   const form = document.querySelector('#authForm');
@@ -17,7 +5,7 @@ firebase.initializeApp(firebaseConfig);
     event.preventDefault();
     const email = form.email.value;
     const password = form.password.value;
-    firebase.auth().signInWithEmailAndPassword(email, password)
+    app.auth().signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
         // 登錄成功，使用者信息存儲在 userCredential.user 中
         console.log('登錄成功:', userCredential.user);
@@ -33,7 +21,7 @@ firebase.initializeApp(firebaseConfig);
     event.preventDefault();
     const email = form.email.value;
     const password = form.password.value;
-    firebase.auth().createUserWithEmailAndPassword(email, password)
+    app.auth().createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
         // Signed in 
         var user = userCredential.user;
