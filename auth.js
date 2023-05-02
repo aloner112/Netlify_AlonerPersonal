@@ -1,4 +1,3 @@
-import { initializeApp } from "firebase/app";
 // 初始化 Firebase 應用程序
 const firebaseConfig = {
   apiKey: "AIzaSyArRwODvp0wTYoK6auatnEorH872xRFdEw",
@@ -50,8 +49,8 @@ firebase.initializeApp(firebaseConfig);
   });
 
   const form2 = document.querySelector('#testTitle');
-  form2.addEventListener('changeTitle', (event) => {
+  form2.addEventListener('#btn_ChangeTitle', (event) => {
     event.preventDefault();
     let txt = title.textContent + 'A';
-    title.textContent = txt;
+    title.textContent = 'txt';
   });
