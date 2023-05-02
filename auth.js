@@ -1,11 +1,12 @@
 // 初始化 Firebase 應用程序
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyArRwODvp0wTYoK6auatnEorH872xRFdEw",
+  authDomain: "aloner-avg-scenario-editor.firebaseapp.com",
+  projectId: "aloner-avg-scenario-editor",
+  storageBucket: "aloner-avg-scenario-editor.appspot.com",
+  messagingSenderId: "941306290489",
+  appId: "1:941306290489:web:05c1556e6a4ff1f9ed08e8",
+  measurementId: "G-026DDW5KPL"
   };
   firebase.initializeApp(firebaseConfig);
   
