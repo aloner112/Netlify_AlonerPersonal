@@ -51,7 +51,8 @@ firebase.initializeApp(firebaseConfig);
   });
 
   const form2 = document.querySelector('#testTitle');
-  form.addEventListener('changeTitle', (event) => {
+  form2.addEventListener('changeTitle', (event) => {
     event.preventDefault();
-    title.textContent += 'a';
+    let txt = title.textContent + 'A';
+    title.textContent = txt;
   });
