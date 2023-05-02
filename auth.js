@@ -1,3 +1,4 @@
+import { initializeApp } from "firebase/app";
 // 初始化 Firebase 應用程序
 const firebaseConfig = {
   apiKey: "AIzaSyArRwODvp0wTYoK6auatnEorH872xRFdEw",
