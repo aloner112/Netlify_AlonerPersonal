@@ -49,6 +49,8 @@ firebase.initializeApp(firebaseConfig);
         // ..
       });
   });
+
+  const form2 = document.querySelector('#testTitle');
   form.addEventListener('changeTitle', (event) => {
     event.preventDefault();
     title.textContent += 'a';
