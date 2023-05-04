@@ -26,13 +26,15 @@
   
   const title = document.querySelector('#title');
   // 登錄表單
-  const form = document.querySelector('#authForm');
+  const authForm = document.querySelector('#authForm');
+  const loggedInUserBlock = document.querySelector('#loggedInUserBlock');
   const btn_LogIn = document.querySelector('#btn_LogIn');
   const btn_SignUp = document.querySelector('#btn_SignUp');
   const btn_LogOut = document.querySelector('#btn_LogOut');
   const email = document.querySelector('#email');
   const password = document.querySelector('#password');
   const userInfo = document.querySelector('#UserInfo');
+  const windowWidth = document.querySelector('#windowWidth');
   btn_LogIn.addEventListener('click', async(event) => {
     event.preventDefault();
     signInWithEmailAndPassword(auth, email.value, password.value)
@@ -75,9 +77,17 @@
   const displayUserEmail = async() =>{
     if(auth.currentUser){
       userInfo.textContent = "當前使用者：" + auth.currentUser.email;
+      authForm.style.display = 'none';
+      loggedInUserBlock.style.display = 'block';
     }else{
       userInfo.textContent = "未登入";
+      authForm.style.display = 'block';
+      loggedInUserBlock.style.display = 'none';
     }
   };
   
   auth.onAuthStateChanged(displayUserEmail);
+
+  window.addEventListener('resize', function(){
+    windowWidth.textContent = window.innerWidth;
+  } )

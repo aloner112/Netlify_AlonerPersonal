@@ -7,21 +7,32 @@
     <link rel="stylesheet" type="text/css" href="alonerStyles.css">
   </head>
   <body>
-    <h1 id="title">Firebase登入範例</h1>
-    <form id="authForm">
-      <div>
-        <label for="email">Email:</label>
-        <input type="email" placeholder="email" id="email" name="email" required>
-        <label for="password">密碼:</label>
-        <input type="password" placeholder="password" id="password" name="password" required>
-        <button type="button" id="btn_LogIn">登入</button>
-        <button type="button" id="btn_SignUp">註冊</button>
+    <div id="headContainer">
+      <div id="title">
+      <h1>Firebase登入範例</h1>
       </div>
-    </form>
-    <div id="secretArea">
-      <h2 id="UserInfo" >User Email</h2>
-      <button type="button" id="btn_LogOut">登出</button>
+      <div id="TopRightContainer">
+        <div id="authForm">
+          <div id="emailDiv">
+            <label for="email" id="labelEmail">Email:</label>
+            <input type="email" placeholder="email" id="email" name="email" required>
+          </div>
+          <div id="passwordDiv">
+            <label for="password" id="labelPassword">密碼:</label>
+            <input type="password" placeholder="password" id="password" name="password" required>
+          </div>
+          <div id="buttonDiv">
+            <button type="button" id="btn_LogIn">登入</button>
+            <button type="button" id="btn_SignUp">註冊</button>
+          </div>
+        </div>
+        <div id="loggedInUserBlock">
+          <h2 id="UserInfo" >User Email</h2>
+          <button type="button" id="btn_LogOut">登出</button>
+        </div>
+      </div>
     </div>
+    <div id="windowWidth">window width</div>
     <script type="module" src="auth.js"></script>
     <!--
       <form id="testTitle">
