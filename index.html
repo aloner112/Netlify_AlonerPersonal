@@ -3,20 +3,20 @@
   <head>
     <meta charset="utf-8">
     <title>Firebase 登錄範例</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="alonerStyles.css">
   </head>
   <body>
-    <h1 id="title">Firebase 登錄範例</h1>
+    <h1 id="title">Firebase登入範例</h1>
     <form id="authForm">
       <div>
         <label for="email">Email:</label>
         <input type="email" placeholder="email" id="email" name="email" required>
-      </div>
-      <div>
         <label for="password">密碼:</label>
         <input type="password" placeholder="password" id="password" name="password" required>
+        <button type="button" id="btn_LogIn">登入</button>
+        <button type="button" id="btn_SignUp">註冊</button>
       </div>
-      <button type="button" id="btn_LogIn">登入</button>
-      <button type="button" id="btn_SignUp">註冊</button>
     </form>
     <div id="secretArea">
       <h2 id="UserInfo" >User Email</h2>

@@ -1,0 +1,16 @@
+h1, h2{
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 100;
+}
+
+body{
+    text-align: center;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 400;
+}
+#email, #password, #btn_LogIn, #btn_SignUp {
+    display: inline-block;
+}
+#UserInfo, #btn_LogOut {
+    display: inline-block;
+}
