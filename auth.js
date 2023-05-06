@@ -78,10 +78,10 @@
     if(auth.currentUser){
       userInfo.textContent = "當前使用者：" + auth.currentUser.email;
       authForm.style.display = 'none';
-      loggedInUserBlock.style.display = 'block';
+      loggedInUserBlock.style.display = 'inline-block';
     }else{
       userInfo.textContent = "未登入";
-      authForm.style.display = 'block';
+      authForm.style.display = 'inline-block';
       loggedInUserBlock.style.display = 'none';
     }
   };

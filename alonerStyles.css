@@ -15,8 +15,6 @@ body{
     flex-wrap: wrap;
 }
 #title{
-    flex: 325px;
-    position: relative;
     text-align: left;
 }
 #TopRightContainer{
@@ -26,23 +24,19 @@ body{
     text-align: right;
 }
 #authForm{
-    position:absolute;
-    width: 600px;
-    top: 0;
-    right:0;
+    display: inline-block;
+    width: 500px;
     text-align: right;
 }
 #loggedInUserBlock{
-    position:absolute;
-    top: 0;
-    right:0;
+    display: inline-block;
     text-align: right;
 }
 #emailDiv, #passwordDiv, #buttonDiv{
     display: inline-block;
 }
 #labelEmail, #labelPassword{
-    width: 60px;
+    width: 45px;
     text-align: right;
 }
 #email, #password{
@@ -62,38 +56,35 @@ body{
 #UserInfo, #btn_LogOut {
     display: inline-block;
 }
-@media only screen and (max-width: 830px){
-    #emailDiv, #passwordDiv, #buttonDiv{
-        display: block;
+@media only screen and (max-width: 800px){
+    #headContainer{
+        display:block;
+        justify-content: space-between;
+        align-items: center;
     }
-    
-}
-@media only screen and (max-width: 550px){
     #title{
         width: 100%;
         flex-direction: column;
         text-align:center;
     }
-    #TopRightContainer{
-        flex-direction: column;
-        width:100%;
+    
+}
+@media only screen and (max-width: 550px){
+    #headContainer{
+        display:block;
+        justify-content: space-between;
         align-items: center;
-        text-align: center;
+    }
+    #title{
+        width: 100%;
+        flex-direction: column;
+        text-align:center;
     }
     #authForm{
         display:block;
         width: 250px;
         text-align:center;
-    }
-    #emailDiv{
-        width: 250px;
-        align-items:center;
-        text-align:center;
-    }
-    #passwordDiv{
-        width: 250px;
-        align-items:center;
-        text-align:center;
+        align-items: center;
     }
 
 }
