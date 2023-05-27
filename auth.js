@@ -3,14 +3,13 @@
   import { getAuth,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
-      onAuthStateChanged,
       signOut } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
 
   // Your web app's Firebase configuration
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
+  export const firebaseConfig = {
     apiKey: "AIzaSyArRwODvp0wTYoK6auatnEorH872xRFdEw",
     authDomain: "aloner-avg-scenario-editor.firebaseapp.com",
     projectId: "aloner-avg-scenario-editor",
@@ -19,10 +18,9 @@
     appId: "1:941306290489:web:05c1556e6a4ff1f9ed08e8",
     measurementId: "G-026DDW5KPL"
   };
-  
   // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  export const app = initializeApp(firebaseConfig);
+  export const auth = getAuth(app);
   
   const title = document.querySelector('#title');
   // 登錄表單
@@ -88,6 +86,7 @@
   
   auth.onAuthStateChanged(displayUserEmail);
 
-  window.addEventListener('resize', function(){
-    windowWidth.textContent = window.innerWidth;
-  } )
+  // 測試視窗寬度用
+  // window.addEventListener('resize', function(){
+  //   windowWidth.textContent = window.innerWidth;
+  // } )
