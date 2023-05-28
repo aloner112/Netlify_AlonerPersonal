@@ -62,7 +62,7 @@ function pagingClickHandler(pagingDiv){
 }
 
 function getDramasInJson(jsonObj){
-    let dramas = [];
+    dramas = [];
     // 遍歷 JSON 物件的每個屬性
   for (let key in jsonObj) {
     if(jsonObj.hasOwnProperty(key) == false) continue;
@@ -71,5 +71,4 @@ function getDramasInJson(jsonObj){
     item.key = key;
     dramas.push(item); // 將符合條件的 drama 物件添加到陣列中
   }
-  return dramas;
 }
