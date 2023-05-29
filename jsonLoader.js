@@ -30,7 +30,7 @@ $(document).ready(function () {
     var dataContentDiv = $('<div>').addClass('dataContent');
     // dataDiv.text(Object.keys(testJson).length.toString());
     // dataDiv.text(testJson.page1.name);
-    dramas = getDramasInJson(testJson);
+    getDramasInJson(testJson);
     let firstKey = 0;
     dramas.forEach(drama => {
         if(firstKey == 0) firstKey = drama.key;
