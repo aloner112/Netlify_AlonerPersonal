@@ -30,7 +30,7 @@ $(document).ready(function () {
     var dataContentDiv = $('<div>').addClass('dataContent');
     // dataDiv.text(Object.keys(testJson).length.toString());
     // dataDiv.text(testJson.page1.name);
-    dramaKeys = getTypeObjsInJson(testJson, 'drama');
+    dramaKeys = getTypeKeysInJson(testJson, 'drama');
     let firstKey = 0;
     dramaKeys.forEach(dramaKey => {
         if(firstKey == 0) firstKey = dramaKey;
@@ -62,7 +62,7 @@ function pagingClickHandler(pagingDiv){
     $('.dataContent').html(dataContent);
 }
 
-function getTypeObjsInJson(jsonObj, targetType){
+function getTypeKeysInJson(jsonObj, targetType){
     let tmpDramaKeys = [];
     // 遍歷 JSON 物件的每個屬性
     for (let key in jsonObj) {
