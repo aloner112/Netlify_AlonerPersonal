@@ -1,3 +1,15 @@
+import { getDatabase } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+import { app, auth } from "/auth.js";
+
+auth.onAuthStateChanged(()=>{
+    if(auth.currentUser){
+        displayData();
+    }
+    else $('#data').empty();
+});
+
+var database = getDatabase();
+
 var testJson = {
     page1:{
         name: "drama1",
@@ -25,6 +37,28 @@ var testJson = {
 var dramaKeys = [];
 
 $(document).ready(function () {
+    // var dataDiv = $('#data')
+    // var sidebarDiv = $('<div>').addClass('sidebar');
+    // var dataContentDiv = $('<div>').addClass('dataContent');
+    // dramaKeys = getTypeKeysInJson(testJson, 'drama');
+    // let firstKey = 0;
+    // dramaKeys.forEach(dramaKey => {
+    //     if(firstKey == 0) firstKey = dramaKey;
+    //     let currentItem = testJson[dramaKey];
+    //     let pagingDiv = $('<div>').addClass('paging');
+    //     pagingDiv.html(currentItem.name + '<br>' + currentItem.time);
+    //     pagingDiv.attr('data-key', dramaKey);
+    //     pagingDivAddEvent(pagingDiv);
+    //     $(pagingDiv).appendTo(sidebarDiv);
+    // });
+    // $(sidebarDiv).append(addNewDramaPagingButton());
+    // $(dataDiv).append(sidebarDiv);
+    // $(dataDiv).append(dataContentDiv);
+    // let firstPagingDiv = $('.paging[data-key="' + firstKey +'"]');
+    // pagingClickHandler(firstPagingDiv);
+});
+
+function displayData(){
     var dataDiv = $('#data')
     var sidebarDiv = $('<div>').addClass('sidebar');
     var dataContentDiv = $('<div>').addClass('dataContent');
@@ -41,12 +75,12 @@ $(document).ready(function () {
         pagingDivAddEvent(pagingDiv);
         $(pagingDiv).appendTo(sidebarDiv);
     });
-    $(sidebarDiv).append(addNewDramaButtonPaging());
+    $(sidebarDiv).append(addNewDramaPagingButton());
     $(dataDiv).append(sidebarDiv);
     $(dataDiv).append(dataContentDiv);
     let firstPagingDiv = $('.paging[data-key="' + firstKey +'"]');
     pagingClickHandler(firstPagingDiv);
-});
+}
 
 function pagingDivAddEvent(pagingDiv){
     $(pagingDiv).click(function(){
@@ -63,10 +97,14 @@ function pagingClickHandler(pagingDiv){
     $('.dataContent').html(dataContent);
 }
 
-function addNewDramaButtonPaging(){
+function addNewDramaPagingButton(){
     let pagingDiv = $('<div>').addClass('paging');
     pagingDiv.html('Add new drama');
     return pagingDiv;
+}
+
+function addNewDrama(){
+
 }
 
 function getTypeKeysInJson(jsonObj, targetType){

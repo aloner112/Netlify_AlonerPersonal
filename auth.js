@@ -13,6 +13,7 @@
     apiKey: "AIzaSyArRwODvp0wTYoK6auatnEorH872xRFdEw",
     authDomain: "aloner-avg-scenario-editor.firebaseapp.com",
     projectId: "aloner-avg-scenario-editor",
+    databaseURL: "https://aloner-avg-scenario-editor-default-rtdb.firebaseio.com/",
     storageBucket: "aloner-avg-scenario-editor.appspot.com",
     messagingSenderId: "941306290489",
     appId: "1:941306290489:web:05c1556e6a4ff1f9ed08e8",
