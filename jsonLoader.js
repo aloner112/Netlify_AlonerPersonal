@@ -22,7 +22,7 @@ var testJson = {
     }
 }
 
-var dramas;
+var dramaKeys = [];
 
 $(document).ready(function () {
     var dataDiv = $('#data')
@@ -30,13 +30,14 @@ $(document).ready(function () {
     var dataContentDiv = $('<div>').addClass('dataContent');
     // dataDiv.text(Object.keys(testJson).length.toString());
     // dataDiv.text(testJson.page1.name);
-    getDramasInJson(testJson);
+    dramaKeys = getTypeObjsInJson(testJson, 'drama');
     let firstKey = 0;
-    dramas.forEach(drama => {
-        if(firstKey == 0) firstKey = drama.key;
+    dramaKeys.forEach(dramaKey => {
+        if(firstKey == 0) firstKey = dramaKey;
+        let currentItem = testJson[dramaKey];
         let pagingDiv = $('<div>').addClass('paging');
-        pagingDiv.html(drama.name + '<br>' + drama.time);
-        pagingDiv.attr('data-key', drama.key);
+        pagingDiv.html(currentItem.name + '<br>' + currentItem.time);
+        pagingDiv.attr('data-key', dramaKey);
         pagingDivAddEvent(pagingDiv);
         $(pagingDiv).appendTo(sidebarDiv);
     });    
@@ -61,14 +62,14 @@ function pagingClickHandler(pagingDiv){
     $('.dataContent').html(dataContent);
 }
 
-function getDramasInJson(jsonObj){
-    dramas = [];
+function getTypeObjsInJson(jsonObj, targetType){
+    let tmpDramaKeys = [];
     // 遍歷 JSON 物件的每個屬性
-  for (let key in jsonObj) {
-    if(jsonObj.hasOwnProperty(key) == false) continue;
-    let item = jsonObj[key];
-    if (item.type !== 'drama') continue;
-    item.key = key;
-    dramas.push(item); // 將符合條件的 drama 物件添加到陣列中
-  }
+    for (let key in jsonObj) {
+        if(jsonObj.hasOwnProperty(key) == false) continue;
+        let item = jsonObj[key];
+        if (item.type !== targetType) continue;
+        tmpDramaKeys.push(key);
+    }
+    return tmpDramaKeys;
 }
