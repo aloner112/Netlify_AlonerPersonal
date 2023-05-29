@@ -40,7 +40,8 @@ $(document).ready(function () {
         pagingDiv.attr('data-key', dramaKey);
         pagingDivAddEvent(pagingDiv);
         $(pagingDiv).appendTo(sidebarDiv);
-    });    
+    });
+    $(sidebarDiv).append(addNewDramaButtonPaging());
     $(dataDiv).append(sidebarDiv);
     $(dataDiv).append(dataContentDiv);
     let firstPagingDiv = $('.paging[data-key="' + firstKey +'"]');
@@ -60,6 +61,12 @@ function pagingClickHandler(pagingDiv){
     let data = testJson[key];
     let dataContent = data.content.replace(/\n/g, '<br>');
     $('.dataContent').html(dataContent);
+}
+
+function addNewDramaButtonPaging(){
+    let pagingDiv = $('<div>').addClass('paging');
+    pagingDiv.html('Add new drama');
+    return pagingDiv;
 }
 
 function getTypeKeysInJson(jsonObj, targetType){
