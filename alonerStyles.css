@@ -69,6 +69,8 @@ body{
 #headContainer{
     display:flex;
     justify-content: space-between;
+    padding-left: 25px;
+    padding-right: 25px;
     align-items: center;
     flex-wrap: wrap;
 }
