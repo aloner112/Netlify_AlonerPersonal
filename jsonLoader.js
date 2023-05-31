@@ -1,6 +1,7 @@
-import {getDatabase, ref, set, get, child, onValue, update, remove, push
+import {getDatabase, ref, set, get, child, onValue, update, remove, push, equalTo
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
 import { app, auth } from "/auth.js";
+import { DateToString } from "/StringTimeHelper.js"
 
 auth.onAuthStateChanged(()=>{
     if(auth.currentUser){
@@ -17,7 +18,7 @@ var emptyDrama = {
     type: "drama",
     dramaName: "New Drama",
     dramaOrder: "00",
-    dateInStory: "date in story",
+    dateInStory: "2000-01-01",
     dialogues:{},
 }
 
@@ -99,20 +100,29 @@ var dramaKeys = [];
 // $(document).ready(function () {});
 
 function GetData(){
-    get(ref(db, refDramas)).then((snapshot) =>{
+    onValue(ref(db, refDramas), (snapshot) =>{
         if(snapshot.exists()){
             dramas = snapshot.val();
             DisplayData();
         }else{
             console.log("No data available");
         }
-    }).catch((error) => {
-        console.error(error);
-    })    
+    });
+    // get(ref(db, refDramas)).then((snapshot) =>{
+    //     if(snapshot.exists()){
+    //         dramas = snapshot.val();
+    //         DisplayData();
+    //     }else{
+    //         console.log("No data available");
+    //     }
+    // }).catch((error) => {
+    //     console.error(error);
+    // })    
 }
 
 function DisplayData(){
     var dataDiv = $('#data')
+    dataDiv.empty();
     var sidebarDiv = $('<div>').addClass('sidebar');
     var dataContentDiv = $('<div>').addClass('dataContent');
     dataContentDiv.attr('id', 'dataContent');
@@ -151,6 +161,10 @@ function pagingClickHandler(pagingDiv){
     // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
     let content = dramaOrder + dramaName + dateInStory;
     $('#dataContent').html(content);
+    $('#dataContent').attr('data-key', key);
+    let delButton = $('<button>').text('Delete Drama');
+    delButton.click(() => deleteDrama(key));
+    $('#dataContent').append(delButton);
 }
 
 function addNewDramaPagingButton(){
@@ -160,9 +174,57 @@ function addNewDramaPagingButton(){
     return pagingDiv;
 }
 
-function addNewDrama(){
+async function addNewDrama(){
     let pushRef = push(ref(db, refDramas));
-    set(pushRef, emptyDrama);
+    let newDrama = await generateEmptyDrama(db, refDramas);
+    set(pushRef, newDrama);
+}
+
+async function generateEmptyDrama(db, path) {
+    let snapshot = await get(ref(db, path), {
+      orderByChild: 'type',
+      equalTo: 'drama'
+    });
+  
+    let latestOrder = 0;
+    let num = 0;
+    let latestDate = null;
+    let tmpEmptyDrama = Object.assign({}, emptyDrama);
+    let data = snapshot.val();
+    if (data) {
+      Object.values(data).forEach(item => {
+        if (item.dramaName.startsWith(emptyDrama.dramaName)){
+            let suffix = item.dramaName.substring(emptyDrama.dramaName.length).trim();
+            if (suffix === "")
+                num = Math.max(num, 1);
+            else {
+                let suffixNum = parseInt(suffix, 10);
+                if (!isNaN(suffixNum))
+                    num = Math.max(num, suffixNum + 1);
+            }
+        }
+        let order = parseInt(item.dramaOrder, 10);
+        if(isNaN(order) == false)
+            if(order > latestOrder)
+                latestOrder = order;
+
+        let date = new Date(item.dateInStory);
+        if(isNaN(date) == false)
+            if(latestDate === null || date > latestDate)
+                latestDate = date;
+      });
+    }
+    tmpEmptyDrama.dramaOrder = latestOrder + 1;
+    tmpEmptyDrama.dramaName = num === 0 ? emptyDrama.dramaName : `${emptyDrama.dramaName} ${num}`;
+    if(latestDate !== null){
+        let nextDate = new Date(latestDate);
+        nextDate.setDate(latestDate.getDate() + 1);
+        tmpEmptyDrama.dateInStory = DateToString(nextDate);
+    }  
+    return tmpEmptyDrama;
+}
+function deleteDrama(key){
+    remove(ref(db, refDramas + "/" + key));
 }
 
 function getTypeKeysInJson(dataObj, targetType){

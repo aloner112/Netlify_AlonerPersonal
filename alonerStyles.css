@@ -69,8 +69,7 @@ body{
 #headContainer{
     display:flex;
     justify-content: space-between;
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 25px;    
     align-items: center;
     flex-wrap: wrap;
 }
@@ -82,13 +81,16 @@ body{
     width: 500px;
     position: relative;
     text-align: right;
+    
 }
 #authForm{
+    padding-right: 25px;
     display: inline-block;
     width: 500px;
     text-align: right;
 }
 #loggedInUserBlock{
+    padding-right: 25px;
     display: inline-block;
     text-align: right;
 }
