@@ -153,18 +153,34 @@ function pagingDivAddEvent(pagingDiv){
 function pagingClickHandler(pagingDiv){
     $('.paging').removeClass('selected');
     $(pagingDiv).addClass('selected');
+    $('#dataContent').empty();
     let key = $(pagingDiv).attr('data-key');
     let data = dramas[key];
-    let dramaOrder = "<div>Drama Order: " + data.dramaOrder + "</div>";
-    let dramaName = "<div>Drama Name: " + data.dramaName + "</div>";
+    let dramaOrderRow = $('<div>').addClass('rowParent');
+    let dramaOrderRowLeft = $('<div>').addClass('left');
+    let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('left');
+    let dramaOrderEdit = $('<input>').attr({
+        type: 'number', class: 'quantity-input', value: data.dramaOrder,
+        min: '0', class: 'left.input', id: 'dramaOrderEdit'});
+    let dramaNameRow = $('<div>').addClass('rowParent');
+    let dramaName = $('<div>').text('Drama Name: ' + data.dramaName).attr({class: 'left'});
+    let dramaNameEdit = $('<input>').attr({ type: 'string',
+     value: data.dramaName, class: 'left', id:'dramaNameEdit'});
+    let dramaNameButton = $('<button>').text('Modify Drama Name').addClass('left');
+    let dateInStoryRow = $('<div>').addClass('rowParent');
     let dateInStory = "<div>Date in story: " + data.dateInStory + "</div>";
     // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
-    let content = dramaOrder + dramaName + dateInStory;
-    $('#dataContent').html(content);
+    // let content = dramaName + dateInStory;
+    // $('#dataContent').html(content);
+    $('#dataContent').append(dramaOrder)
     $('#dataContent').attr('data-key', key);
-    let delButton = $('<button>').text('Delete Drama');
+    let delButton = $('<button>').text('Delete Drama').addClass('right');
     delButton.click(() => deleteDrama(key));
-    $('#dataContent').append(delButton);
+    // dramaOrderRowLeft.append([dramaOrder, dramaOrderEdit])
+    dateInStoryRow.append([dateInStory]);
+    dramaOrderRow.append([dramaOrder, dramaOrderEdit, delButton]);
+    dramaNameRow.append([dramaName, dramaNameEdit, dramaNameButton]);
+    $('#dataContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow]);
 }
 
 function addNewDramaPagingButton(){
