@@ -167,6 +167,7 @@ function pagingClickHandler(pagingDiv){
     let dramaNameEdit = $('<input>').attr({ type: 'string',
      value: data.dramaName, class: 'left', id:'dramaNameEdit'});
     let dramaNameButton = $('<button>').text('Modify Drama Name').addClass('left');
+    dramaNameButton.click(() => EditDramaName());
     let dateInStoryRow = $('<div>').addClass('rowParent');
     let dateInStory = "<div>Date in story: " + data.dateInStory + "</div>";
     // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
@@ -181,6 +182,14 @@ function pagingClickHandler(pagingDiv){
     dramaOrderRow.append([dramaOrder, dramaOrderEdit, delButton]);
     dramaNameRow.append([dramaName, dramaNameEdit, dramaNameButton]);
     $('#dataContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow]);
+}
+
+function EditDramaName(){
+    let newName = $('#dramaNameEdit').val();
+    let key = $('#dataContent').attr('data-key');
+    let obj = Object.assign({}, dramas[key]);
+    obj.dramaName = newName;
+    set(ref(db, refDramas + '/' + key), obj);
 }
 
 function addNewDramaPagingButton(){
