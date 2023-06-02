@@ -79,7 +79,17 @@ body{
 .left{
     float: left; /* 左對齊 */
     margin-right: 8px;
+    margin-bottom: 4px;
     text-align: center;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 400;
+}
+.leftTitle{
+    float: left; /* 左對齊 */
+    width: 102px;
+    margin-right: 8px;
+    margin-bottom: 4px;
+    text-align: left;
     font-family: 'Noto Sans TC', sans-serif;
     font-weight: 400;
 }

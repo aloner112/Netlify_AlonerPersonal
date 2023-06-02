@@ -10,13 +10,13 @@ export function StringToDate(strDate){
 
     let hours = parseInt(timeParts[0], 10);
     let minutes = parseInt(timeParts[1], 10);
-    let seconds = parseInt(timeParts[2], 10);
+    // let seconds = parseInt(timeParts[2], 10);
 
-    if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+    if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes)) {
         return null;  // 如果任何一部分不能被正确地解析为数字，那么返回 null
     }
 
-    return new Date(year, month, day, hours, minutes, seconds);
+    return new Date(year, month, day, hours, minutes);
 }
 
 //Date to String
@@ -26,6 +26,19 @@ export function DateToString(date){
     let day = date.getDate();
     let hours = String(date.getHours()).padStart(2, '0');
     let minutes = String(date.getMinutes()).padStart(2, '0');
-    let seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    // let seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+export function DateToStringTime(date){
+    let hours = String(date.getHours()).padStart(2, '0');
+    let minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
+
+export function DateToStringDate(date){
+    let year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    return `${year}-${month}-${day}`;
 }

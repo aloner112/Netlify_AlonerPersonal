@@ -1,7 +1,8 @@
 import {getDatabase, ref, set, get, child, onValue, update, remove, push, equalTo
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
 import { app, auth } from "/auth.js";
-import { DateToString, StringToDate } from "/StringTimeHelper.js"
+import { DateToString, StringToDate, DateToStringTime,
+    DateToStringDate } from "/StringTimeHelper.js"
 
 auth.onAuthStateChanged(()=>{
     if(auth.currentUser){
@@ -18,7 +19,7 @@ var emptyDrama = {
     type: "drama",
     dramaName: "New Drama",
     dramaOrder: "00",
-    dateInStory: "2000-01-01 00:00:00",
+    dateInStory: "2000-01-01 00:00",
     dialogues:{},
 }
 
@@ -158,18 +159,29 @@ function pagingClickHandler(pagingDiv){
     let data = dramas[key];
     let dramaOrderRow = $('<div>').addClass('rowParent');
     let dramaOrderRowLeft = $('<div>').addClass('left');
-    let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('left');
+    let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('leftTitle');
     let dramaOrderEdit = $('<input>').attr({
         type: 'number', class: 'quantity-input', value: data.dramaOrder,
         min: '0', class: 'left.input', id: 'dramaOrderEdit'});
     let dramaNameRow = $('<div>').addClass('rowParent');
-    let dramaName = $('<div>').text('Drama Name: ' + data.dramaName).attr({class: 'left'});
+    let dramaName = $('<div>').text('Drama Name:').attr({class: 'leftTitle'});
+    let dramaNameData = $('<div>').text(data.dramaName).addClass('left');
     let dramaNameEdit = $('<input>').attr({ type: 'string',
      value: data.dramaName, class: 'left', id:'dramaNameEdit'});
     let dramaNameButton = $('<button>').text('Modify Drama Name').addClass('left');
     dramaNameButton.click(() => EditDramaName());
+    let dataDate = StringToDate(data.dateInStory);
+    let strDate = DateToStringDate(dataDate);
+    let strTime = DateToStringTime(dataDate);
     let dateInStoryRow = $('<div>').addClass('rowParent');
-    let dateInStory = "<div>Date in story: " + data.dateInStory + "</div>";
+    let dateInStory = $('<div>').text('Date in Story:').addClass('leftTitle');
+    let dateInStoryData = $('<div>').text(data.dateInStory).addClass('left');
+    let dateEdit = $('<input>').attr({type: 'date',
+     value: strDate, class: 'left', id: 'dateEdit'});
+    let timeEdit = $('<input>').attr({type: 'time',
+     value: strTime, class: 'left', id: 'timeEdit'})
+    let dateEditButton = $('<button>').text('Modify Date in Story').addClass('left');
+    dateEditButton.click(() => EditDateInStory());
     // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
     // let content = dramaName + dateInStory;
     // $('#dataContent').html(content);
@@ -178,10 +190,19 @@ function pagingClickHandler(pagingDiv){
     let delButton = $('<button>').text('Delete Drama').addClass('right');
     delButton.click(() => deleteDrama(key));
     // dramaOrderRowLeft.append([dramaOrder, dramaOrderEdit])
-    dateInStoryRow.append([dateInStory]);
+    dateInStoryRow.append([dateInStory, dateInStoryData, dateEdit, timeEdit, dateEditButton]);
     dramaOrderRow.append([dramaOrder, dramaOrderEdit, delButton]);
-    dramaNameRow.append([dramaName, dramaNameEdit, dramaNameButton]);
+    dramaNameRow.append([dramaName, dramaNameData, dramaNameEdit, dramaNameButton]);
     $('#dataContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow]);
+}
+
+function EditDateInStory(){
+    let newDate = $('#dateEdit').val() + " " + $('#timeEdit').val();
+    // console.log(newDate);
+    let key = $('#dataContent').attr('data-key');
+    let obj = Object.assign({}, dramas[key]);
+    obj.dateInStory = newDate;
+    set(ref(db, refDramas + '/' + key), obj);
 }
 
 function EditDramaName(){
