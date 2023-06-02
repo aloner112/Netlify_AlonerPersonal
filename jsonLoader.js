@@ -1,7 +1,7 @@
 import {getDatabase, ref, set, get, child, onValue, update, remove, push, equalTo
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
 import { app, auth } from "/auth.js";
-import { DateToString } from "/StringTimeHelper.js"
+import { DateToString, StringToDate } from "/StringTimeHelper.js"
 
 auth.onAuthStateChanged(()=>{
     if(auth.currentUser){
@@ -18,7 +18,7 @@ var emptyDrama = {
     type: "drama",
     dramaName: "New Drama",
     dramaOrder: "00",
-    dateInStory: "2000-01-01",
+    dateInStory: "2000-01-01 00:00:00",
     dialogues:{},
 }
 
@@ -233,7 +233,7 @@ async function generateEmptyDrama(db, path) {
             if(order > latestOrder)
                 latestOrder = order;
 
-        let date = new Date(item.dateInStory);
+        let date = StringToDate(item.dateInStory);
         if(isNaN(date) == false)
             if(latestDate === null || date > latestDate)
                 latestDate = date;
