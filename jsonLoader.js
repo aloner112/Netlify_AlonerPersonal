@@ -197,6 +197,7 @@ function pagingClickHandler(pagingDiv){
 }
 
 function EditDateInStory(){
+    let date = $('#dateEdit').val();
     let newDate = $('#dateEdit').val() + " " + $('#timeEdit').val();
     // console.log(newDate);
     let key = $('#dataContent').attr('data-key');

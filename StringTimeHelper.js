@@ -37,8 +37,11 @@ export function DateToStringTime(date){
 }
 
 export function DateToStringDate(date){
-    let year = date.getFullYear();
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
+    let year = String(date.getFullYear());
+    let month = String(date.getMonth() + 1);
+    let day = String(date.getDate());
+    year = year.padStart(4, '0');
+    month = month.padStart(2, '0');
+    day = day.padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
