@@ -19,7 +19,7 @@ body{
 }
 
 .sidebar {
-    width: 150px;
+    width: 180px;
     padding: 0%;
     margin: 0%;    
     border-collapse: collapse;
@@ -28,7 +28,7 @@ body{
 }
 
 .paging {
-    width: 150px;
+    width: 180px;
     border: 1px solid #494949;
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
@@ -37,8 +37,10 @@ body{
     transition: background-color 0.3s ease;    
     border-collapse: collapse;
     box-sizing: border-box;
-    z-index: 3;
-    
+    z-index: 3;    
+    align-items: center; /*縱向置中*/
+    justify-content: center; /*橫向置中*/
+    display: flex;
 }
 .paging:hover {
     border: 1px solid #494949;
@@ -53,6 +55,14 @@ body{
 }
 .paging.mouseDown {
     background-color: #dd7272;
+}
+.pagingOrder{
+    float: left;
+    width: 25px
+}
+.pagingContent{
+    float: right;
+    width: 150px;
 }
 
 .dataContent{

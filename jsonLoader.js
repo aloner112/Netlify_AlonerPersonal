@@ -111,16 +111,6 @@ function GetData(){
             DisplayEmptyData()
         }
     });
-    // get(ref(db, refDramas)).then((snapshot) =>{
-    //     if(snapshot.exists()){
-    //         dramas = snapshot.val();
-    //         DisplayData();
-    //     }else{
-    //         console.log("No data available");
-    //     }
-    // }).catch((error) => {
-    //     console.error(error);
-    // })    
 }
 
 function DisplayEmptyData(){
@@ -129,6 +119,7 @@ function DisplayEmptyData(){
     var sidebarDiv = $('<div>').addClass('sidebar');
     var dataContentDiv = $('<div>').addClass('dataContent');
     dataContentDiv.attr('id', 'dataContent');
+    dataContentDiv.text('no drama now.');
     $(sidebarDiv).append(addNewDramaPagingButton());
     $(dataDiv).append(sidebarDiv);
     $(dataDiv).append(dataContentDiv);
@@ -148,13 +139,16 @@ function DisplayData(){
             if(firstKey == 0) firstKey = dramaKey;
             let currentItem = dramas[dramaKey];
             let pagingDiv = $('<div>').addClass('paging');
-            pagingDiv.html(currentItem.dramaOrder + ' ' + currentItem.dramaName + '<br>' + currentItem.dateInStory);
+            let pagingOrder = $('<div>').text(currentItem.dramaOrder).addClass('pagingOrder');
+            let pagingContent = $('<div>').html(currentItem.dramaName + '<br>' + currentItem.dateInStory).addClass('pagingContent');
+            pagingDiv.append([pagingOrder, pagingContent]);
             pagingDiv.attr({'data-key': dramaKey, 'dramaOrder': currentItem.dramaOrder});
-            pagingDivAddEvent(pagingDiv);
+            pagingDiv.click(()=> pagingClickHandler(pagingDiv));
             pagingDivArray.push(pagingDiv);
-            // $(pagingDiv).appendTo(sidebarDiv);
         });
-        pagingDivArray.sort((divA, divB) => {return getDivOrder(divA) - getDivOrder(divB)});
+        pagingDivArray.sort((divA, divB) => {
+            return divA.attr('dramaOrder') - divB.attr('dramaOrder');
+        });
         $(sidebarDiv).append(pagingDivArray);
         $(sidebarDiv).append(addNewDramaPagingButton());
         $(dataDiv).append(sidebarDiv);
@@ -170,16 +164,6 @@ function DisplayData(){
 
 }
 
-function getDivOrder(myDiv){
-    return myDiv.attr('dramaOrder');
-}
-
-function pagingDivAddEvent(pagingDiv){
-    $(pagingDiv).click(function(){
-        pagingClickHandler(pagingDiv);
-    });
-}
-
 function pagingClickHandler(pagingDiv){
     $('.paging').removeClass('selected');
     $(pagingDiv).addClass('selected');
@@ -191,7 +175,7 @@ function pagingClickHandler(pagingDiv){
     // let dramaOrderRowLeft = $('<div>').addClass('left');
     let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('leftTitle');
     let dramaOrderEdit = $('<input>').attr({type: 'number', class: 'quantity-input',
-     'value': data.dramaOrder, min: '0', class: 'left.input', id: 'dramaOrderEdit'});
+     'value': data.dramaOrder, min: '1', class: 'left.input', id: 'dramaOrderEdit'});
      dramaOrderEdit.data('previousValue', data.dramaOrder);
     dramaOrderEdit.change(function(){
         let previousValue = $(this).data('previousValue');
@@ -319,10 +303,7 @@ function DivsSameWidth(divs){
 function EditDateInStory(){
     let date = $('#dateEdit').val();
     let newDate = $('#dateEdit').val() + " " + $('#timeEdit').val();
-    // console.log(newDate);
     let key = $('#dataContent').attr('data-key');
-    // let obj = Object.assign({}, dramas[key]);
-    // obj.dateInStory = newDate;
     update(ref(db, refDramas + '/' + key), {dateInStory: newDate});
 }
 
@@ -394,16 +375,14 @@ async function generateEmptyDrama(db, path) {
 }
 async function deleteDrama(key){
     let divs = $('.paging');
-    // if(divs.length == 1)
     let currentDiv = $('.paging[data-key="' + key +'"]');
-    // let currentOrder = parseInt(currentDiv.attr('dramaOrder'), 10);
     let closestDiv = findClosestDiv(divs, currentDiv);
-    // console.log('closestDiv is null?' + `${closestDiv == null}`);
     if(closestDiv != null) pagingClickHandler(closestDiv);    
     await remove(ref(db, refDramas + "/" + key));
     await UpdateDramas();
 }
 
+//決定當刪除一個drama時，要選取哪一個drama
 function findClosestDiv(divs, selfDiv) {
     let closestDiv = null;
     let closestDiff = Infinity;
@@ -424,7 +403,7 @@ function findClosestDiv(divs, selfDiv) {
     });
   
     return closestDiv;
-  }
+}
 
 function getTypeKeysInJson(dataObj, targetType){
     let tmpDramaKeys = Object.keys(dataObj).filter(
