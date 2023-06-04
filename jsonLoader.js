@@ -114,6 +114,7 @@ function GetData(){
 }
 
 function DisplayEmptyData(){
+    currentDramaKey = null;
     var dataDiv = $('#data')
     dataDiv.empty();
     var sidebarDiv = $('<div>').addClass('sidebar');
@@ -174,13 +175,18 @@ function pagingClickHandler(pagingDiv){
     let dramaOrderRow = $('<div>').addClass('rowParent');
     // let dramaOrderRowLeft = $('<div>').addClass('left');
     let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('leftTitle');
-    let dramaOrderEdit = $('<input>').attr({type: 'number', class: 'quantity-input',
-     'value': data.dramaOrder, min: '1', class: 'left.input', id: 'dramaOrderEdit'});
-     dramaOrderEdit.data('previousValue', data.dramaOrder);
-    dramaOrderEdit.change(function(){
-        let previousValue = $(this).data('previousValue');
-        ChangeDramaOrder(previousValue);
-    });
+    let dramaOrderUpButton = $('<button>').text('▲').addClass('left');
+    dramaOrderUpButton.click(()=>DramaOrderAdd(-1));
+    let dramaOrderDisplay = $('<div>').text(data.dramaOrder).addClass('left');
+    let dramaOrderDownButton = $('<button>').text('▼').addClass('left');
+    dramaOrderDownButton.click(()=>DramaOrderAdd(1));
+    // let dramaOrderEdit = $('<input>').attr({type: 'number', class: 'quantity-input',
+    //  'value': data.dramaOrder, min: '1', class: 'left.input', id: 'dramaOrderEdit'});
+    //  dramaOrderEdit.data('previousValue', data.dramaOrder);
+    // dramaOrderEdit.change(function(){
+    //     let previousValue = $(this).data('previousValue');
+    //     ChangeDramaOrder(previousValue);
+    // });
     let dramaNameRow = $('<div>').addClass('rowParent');
     let dramaName = $('<div>').text('Drama Name:').attr({class: 'leftTitle'});
     let dramaNameData = $('<div>').text(data.dramaName).addClass('left');
@@ -204,13 +210,14 @@ function pagingClickHandler(pagingDiv){
     // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
     // let content = dramaName + dateInStory;
     // $('#dataContent').html(content);
-    $('#dataContent').append(dramaOrder)
+    // $('#dataContent').append(dramaOrder)
     $('#dataContent').attr('data-key', key);
+    $('#dataContent').attr('dramaOrder', data.dramaOrder);
     let delButton = $('<button>').text('Delete Drama').addClass('right');
     delButton.click(() => deleteDrama(key));
     // dramaOrderRowLeft.append([dramaOrder, dramaOrderEdit])
     dateInStoryRow.append([dateInStory, dateInStoryData, dateEdit, timeEdit, dateEditButton]);
-    dramaOrderRow.append([dramaOrder, dramaOrderEdit, delButton]);
+    dramaOrderRow.append([dramaOrder, dramaOrderUpButton, dramaOrderDisplay, dramaOrderDownButton, delButton]);
     dramaNameRow.append([dramaName, dramaNameData, dramaNameEdit, dramaNameButton]);
     $('#dataContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow]);
     DivsSameWidth([dramaNameData, dateInStoryData]);
@@ -225,7 +232,100 @@ async function UpdateDramas(){
     }
 }
 
+//雖然參數是num，但只有正和負的差異，0是正
+async function DramaOrderAdd(num){
+    let nowOrderString = $('#dataContent').attr('dramaOrder');
+    let nowOrder = parseInt(nowOrderString, 10);
+    let nowKey = $('#dataContent').attr('data-key');
+
+    if(num < 0 && nowOrder <= 1) {
+        console.log('Drama Order 不能小於1');
+        return;
+    } //Drama Order 不能小於1
+    let divs = $('.paging[dramaOrder]').toArray();
+    divs.sort((a, b)=>{
+        let aValue = parseInt(a.getAttribute('dramaOrder'), 10);
+        let bValue = parseInt(b.getAttribute('dramaOrder'), 10);
+        return aValue - bValue;
+    });
+    divs.reverse();
+    if(num >= 0 && nowOrder >= divs.length){
+        console.log('若Drama Order大於或等於目前最大的order值，則不改動order');
+        return; //若Drama Order大於或等於目前最大的order值，則不改動order
+    }
+    
+    let datasToSwitch = [];
+    divs.forEach(nowDiv =>{
+        let nowDivOrder = $(nowDiv).attr('dramaOrder');
+        let nowDivKey = $(nowDiv).attr('data-key');
+        var pushData = {'order': nowDivOrder, 'dataKey': nowDivKey};
+        // console.log('nowDivOrder = '+ nowDivOrder + ', nowOrder = '+nowOrder);
+        if(num >= 0){
+            if(nowDivOrder > nowOrder) {
+                datasToSwitch.push(pushData);
+            }
+        }
+        else{
+            if(nowDivOrder < nowOrder){
+                datasToSwitch.push(pushData);
+            }
+        }
+    });
+    // console.log('datasToSwitch.length = '+datasToSwitch.length);
+    if(datasToSwitch.length == 0) {
+        console.log('沒有資料的order可替換');
+        return; //沒有資料的order可替換
+    }
+    datasToSwitch.sort((a, b)=>{
+        let aValue = parseInt(a.order, 10);
+        let bValue = parseInt(b.order, 10);
+        return aValue - bValue;
+    });
+    if(num < 0){
+        datasToSwitch.reverse();
+    }
+    let dataToSwitchKey = datasToSwitch[0].dataKey;
+    let dataToSwitchOrder = parseInt(datasToSwitch[0].order);
+    // console.log('dataToSwitchOrder: ' + dataToSwitchOrder);
+    if(Math.abs(nowOrder - dataToSwitchOrder) == 1){
+        let updateList = [];
+        //替換order
+        updateList.push({
+            dataKey: dataToSwitchKey,
+            dataOrder: nowOrder
+        });
+        updateList.push({
+            dataKey: nowKey,
+            dataOrder: dataToSwitchOrder
+        });
+        
+        let promises = updateList.map((item)=>{
+            let itemRef = ref(db, refDramas + '/' + item.dataKey);
+            return runTransaction(itemRef, (currentData) =>{
+                if(currentData){
+                    currentData.dramaOrder = item.dataOrder;
+                    return currentData;
+                }else{
+                    return;
+                }
+            });
+        });
+        try{
+            await Promise.all(promises);
+        }catch(error){
+            console.error(error);
+        }
+
+    }else{
+        //如果目標Order沒被占用，直接寫入order
+        let addAmount = num >= 0 ? 1 : -1;
+        update(ref(db, refDramas + '/' + nowKey), {dramaOrder: nowOrder + addAmount});
+    }
+}
+
+//指定數字來變更Drama Order的方法，有bug，暫不使用。
 async function ChangeDramaOrder(previousValue){
+    // console.log('previousValue: ' +previousValue + ', order: '+order);
     previousValue = parseInt(previousValue, 10);
     let order = parseInt($('#dramaOrderEdit').val(), 10);
     let key = $('#dataContent').attr('data-key');
@@ -247,7 +347,10 @@ async function ChangeDramaOrder(previousValue){
         let orderB = parseInt(b.order);
         return orderA - orderB;
     });
-    let largestOrder = parseInt(orderAndKeys[orderAndKeys.length -1].order, 10);
+    // console.log('largestOrder:' +orderAndKeys[orderAndKeys.length -1].order);
+    orderAndKeys.reverse();
+    let largestOrder = parseInt(orderAndKeys[0].order, 10);
+    orderAndKeys.reverse();
     let firstSelf = {'key': key, 'order': largestOrder + 1};
     let self = {'key': key, 'order': order};
     let updateList = [];
@@ -326,8 +429,8 @@ async function addNewDrama(){
     await set(pushRef, newDrama);
     let snapshot = await get(pushRef);
     currentDramaKey = snapshot.key;
-    let showPageDiv = $('.paging[data-key="' + currentDramaKey +'"]');
-    pagingClickHandler(showPageDiv);
+    // let showPageDiv = $('.paging[data-key="' + currentDramaKey +'"]');
+    // pagingClickHandler(showPageDiv);
 }
 
 async function generateEmptyDrama(db, path) {
@@ -374,12 +477,14 @@ async function generateEmptyDrama(db, path) {
     return tmpEmptyDrama;
 }
 async function deleteDrama(key){
-    let divs = $('.paging');
+    let divs = $('.paging[dramaOrder]');
     let currentDiv = $('.paging[data-key="' + key +'"]');
     let closestDiv = findClosestDiv(divs, currentDiv);
-    if(closestDiv != null) pagingClickHandler(closestDiv);    
+    if(closestDiv != null) {
+        pagingClickHandler(closestDiv);
+    }    
     await remove(ref(db, refDramas + "/" + key));
-    await UpdateDramas();
+    // await UpdateDramas();
 }
 
 //決定當刪除一個drama時，要選取哪一個drama
@@ -400,8 +505,7 @@ function findClosestDiv(divs, selfDiv) {
         closestDiv = this;
         closestDiff = diff;
         }
-    });
-  
+    });  
     return closestDiv;
 }
 
