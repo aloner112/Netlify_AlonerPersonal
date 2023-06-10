@@ -14,8 +14,11 @@ auth.onAuthStateChanged(()=>{
 const db = getDatabase();
 const refProj = "projects/testProject01";
 const refDramas = "projects/testProject01/dramas";
-const dbRef = ref(db, refDramas);
+const dbRef = ref(db, refProj);
+var project = [];
 var dramas = [];
+var currentSubject = "dramas";
+const subjectTypes = ["drama", "character", "key"];
 var currentDramaKey = null;
 
 var emptyDrama = {
@@ -106,7 +109,7 @@ var dramaKeys = [];
 function GetData(){
     onValue(dbRef, (snapshot) =>{
         if(snapshot.exists()){
-            dramas = snapshot.val();
+            project = snapshot.val();
             DisplayData();
         }else{
             currentDramaKey = null;
@@ -116,14 +119,54 @@ function GetData(){
 }
 
 function DisplayData(){
-    var dataDiv = $('#data')
-    dataDiv.empty();
-    DisplayDramas();
+    var dataContentDiv = $('#dataContent')
+    dataContentDiv.empty();
+    tmpAddSubjectButton();
+    switch(currentSubject){
+        case "dramas":
+            DisplayDramas();
+            break;
+        case "characters":
+            break;
+        case "keys":
+            break;
+        default:
+            break;
+    }
+    
 
 }
 
+function tmpAddSubjectButton(){
+    if($('#selectSubjectType').length > 0){return};
+    var subjectsDiv = $('#subjects');
+    var selectSubjectType = $('<select>').attr('id', 'selectSubjectType');
+    $.each(subjectTypes, function(index, value){
+        var $option = $('<option></option>').val(value).text(value);
+        selectSubjectType.append($option);
+    })
+    var addSubBtn = $('<button>');
+    addSubBtn.text('Add Subject');
+    addSubBtn.click(()=>{
+        let newSubject = selectSubjectType.val();
+        console.log('newSubject = '+newSubject);
+        let newSubjectsObject = {};
+        if(newSubject == "character"){
+            let newCharacter = {type: 'character', name: 'John', age: 30};
+            let newChaRef = push(ref(db, refProj + '/' + newSubject + 's'));
+            set(newChaRef, newCharacter);
+        }else if(newSubject == "key"){
+            let newKey = {type: 'key', name: 'KeyName'};
+            let newChaRef = push(ref(db, refProj + '/' + newSubject + 's'));
+            set(newChaRef, newKey);
+        }
+    });
+    subjectsDiv.append([selectSubjectType, addSubBtn]);
+}
+
 function DisplayDramas(){
-    var dataDiv = $('#data')
+    dramas = project.dramas;
+    var dataContentDiv = $('#dataContent')
     var sidebarDiv = $('<div>').addClass('sidebar');
     var dramaContentDiv = $('<div>').addClass('dramaContent');
     dramaContentDiv.attr('id', 'dramaContent');
@@ -157,8 +200,8 @@ function DisplayDramas(){
 
     function appendDatas(){        
         $(sidebarDiv).append(addNewDramaPagingButton());
-        $(dataDiv).append(sidebarDiv);
-        $(dataDiv).append(dramaContentDiv);
+        $(dataContentDiv).append(sidebarDiv);
+        $(dataContentDiv).append(dramaContentDiv);
     }
 }
 
