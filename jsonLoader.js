@@ -125,8 +125,8 @@ function DisplayData(){
 function DisplayDramas(){
     var dataDiv = $('#data')
     var sidebarDiv = $('<div>').addClass('sidebar');
-    // var dataContentDiv = $('<div>').addClass('dataContent');
-    // dataContentDiv.attr('id', 'dataContent');
+    var dramaContentDiv = $('<div>').addClass('dramaContent');
+    dramaContentDiv.attr('id', 'dramaContent');
     dramaKeys = getTypeKeysInJson(dramas, 'drama');
     if(dramaKeys.length != 0){
         let firstKey = 0;
@@ -152,20 +152,20 @@ function DisplayDramas(){
         pagingClickHandler(showPageDiv);
     }else{
         appendDatas();
-        // dataContentDiv.text('no drama now.');
+        dramaContentDiv.text('no drama now.');
     }
 
     function appendDatas(){        
         $(sidebarDiv).append(addNewDramaPagingButton());
         $(dataDiv).append(sidebarDiv);
-        // $(dataDiv).append(dataContentDiv);
+        $(dataDiv).append(dramaContentDiv);
     }
 }
 
 function pagingClickHandler(pagingDiv){
     $('.paging').removeClass('selected');
     $(pagingDiv).addClass('selected');
-    $('#dataContent').empty();
+    $('#dramaContent').empty();
     let key = $(pagingDiv).attr('data-key');
     currentDramaKey = key;
     let data = dramas[key];
@@ -206,17 +206,17 @@ function pagingClickHandler(pagingDiv){
     
     // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
     // let content = dramaName + dateInStory;
-    // $('#dataContent').html(content);
-    // $('#dataContent').append(dramaOrder)
-    $('#dataContent').attr('data-key', key);
-    $('#dataContent').attr('dramaOrder', data.dramaOrder);
+    // $('#dramaContent').html(content);
+    // $('#dramaContent').append(dramaOrder)
+    $('#dramaContent').attr('data-key', key);
+    $('#dramaContent').attr('dramaOrder', data.dramaOrder);
     let delButton = $('<button>').text('Delete Drama').addClass('right');
     delButton.click(() => deleteDrama(key));
     // dramaOrderRowLeft.append([dramaOrder, dramaOrderEdit])
     dateInStoryRow.append([dateInStory, dateInStoryData, dateEdit, timeEdit, dateEditButton]);
     dramaOrderRow.append([dramaOrder, dramaOrderUpButton, dramaOrderDisplay, dramaOrderDownButton, delButton]);
     dramaNameRow.append([dramaName, dramaNameData, dramaNameEdit, dramaNameButton]);
-    $('#dataContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow]);
+    $('#dramaContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow]);
     DivsSameWidth([dramaNameData, dateInStoryData]);
 }
 
@@ -231,9 +231,9 @@ async function UpdateDramas(){
 
 //雖然參數是num，但只有正和負的差異，0是正
 async function DramaOrderAdd(num){
-    let nowOrderString = $('#dataContent').attr('dramaOrder');
+    let nowOrderString = $('#dramaContent').attr('dramaOrder');
     let nowOrder = parseInt(nowOrderString, 10);
-    let nowKey = $('#dataContent').attr('data-key');
+    let nowKey = $('#dramaContent').attr('data-key');
 
     if(num < 0 && nowOrder <= 1) {
         console.log('Drama Order 不能小於1');
@@ -325,7 +325,7 @@ async function ChangeDramaOrder(previousValue){
     // console.log('previousValue: ' +previousValue + ', order: '+order);
     previousValue = parseInt(previousValue, 10);
     let order = parseInt($('#dramaOrderEdit').val(), 10);
-    let key = $('#dataContent').attr('data-key');
+    let key = $('#dramaContent').attr('data-key');
     await UpdateDramas();
     let orderAndKeys = [];
     for(let dramaKey in dramas){
@@ -403,13 +403,13 @@ function DivsSameWidth(divs){
 function EditDateInStory(){
     let date = $('#dateEdit').val();
     let newDate = $('#dateEdit').val() + " " + $('#timeEdit').val();
-    let key = $('#dataContent').attr('data-key');
+    let key = $('#dramaContent').attr('data-key');
     update(ref(db, refDramas + '/' + key), {dateInStory: newDate});
 }
 
 function EditDramaName(){
     let newName = $('#dramaNameEdit').val();
-    let key = $('#dataContent').attr('data-key');
+    let key = $('#dramaContent').attr('data-key');
     update(ref(db, refDramas + '/' + key), {dramaName: newName});
 }
 
