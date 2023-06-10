@@ -12,9 +12,10 @@ auth.onAuthStateChanged(()=>{
 });
 
 const db = getDatabase();
+const refProj = "projects/testProject01";
 const refDramas = "projects/testProject01/dramas";
 const dbRef = ref(db, refDramas);
-var dramas;
+var dramas = [];
 var currentDramaKey = null;
 
 var emptyDrama = {
@@ -108,30 +109,24 @@ function GetData(){
             dramas = snapshot.val();
             DisplayData();
         }else{
-            DisplayEmptyData()
+            currentDramaKey = null;
+            DisplayData();
         }
     });
-}
-
-function DisplayEmptyData(){
-    currentDramaKey = null;
-    var dataDiv = $('#data')
-    dataDiv.empty();
-    var sidebarDiv = $('<div>').addClass('sidebar');
-    var dataContentDiv = $('<div>').addClass('dataContent');
-    dataContentDiv.attr('id', 'dataContent');
-    dataContentDiv.text('no drama now.');
-    $(sidebarDiv).append(addNewDramaPagingButton());
-    $(dataDiv).append(sidebarDiv);
-    $(dataDiv).append(dataContentDiv);
 }
 
 function DisplayData(){
     var dataDiv = $('#data')
     dataDiv.empty();
+    DisplayDramas();
+
+}
+
+function DisplayDramas(){
+    var dataDiv = $('#data')
     var sidebarDiv = $('<div>').addClass('sidebar');
-    var dataContentDiv = $('<div>').addClass('dataContent');
-    dataContentDiv.attr('id', 'dataContent');
+    // var dataContentDiv = $('<div>').addClass('dataContent');
+    // dataContentDiv.attr('id', 'dataContent');
     dramaKeys = getTypeKeysInJson(dramas, 'drama');
     if(dramaKeys.length != 0){
         let firstKey = 0;
@@ -151,18 +146,20 @@ function DisplayData(){
             return divA.attr('dramaOrder') - divB.attr('dramaOrder');
         });
         $(sidebarDiv).append(pagingDivArray);
-        $(sidebarDiv).append(addNewDramaPagingButton());
-        $(dataDiv).append(sidebarDiv);
-        $(dataDiv).append(dataContentDiv);
+        appendDatas();
         if(currentDramaKey == null) currentDramaKey = firstKey;
         let showPageDiv = $('.paging[data-key="' + currentDramaKey +'"]');
         pagingClickHandler(showPageDiv);
     }else{
-        $(sidebarDiv).append(addNewDramaPagingButton());
-        $(dataDiv).append(sidebarDiv);
-        $(dataDiv).append(dataContentDiv);
+        appendDatas();
+        // dataContentDiv.text('no drama now.');
     }
 
+    function appendDatas(){        
+        $(sidebarDiv).append(addNewDramaPagingButton());
+        $(dataDiv).append(sidebarDiv);
+        // $(dataDiv).append(dataContentDiv);
+    }
 }
 
 function pagingClickHandler(pagingDiv){
