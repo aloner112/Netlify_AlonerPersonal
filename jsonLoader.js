@@ -16,7 +16,7 @@ const refProj = "projects/testProject01";
 const refDramas = "projects/testProject01/dramas";
 const dbRef = ref(db, refProj);
 var project = [];
-var dramas = [];
+// var dramas = [];
 var currentSubject = "dramas";
 const subjectTypes = ["drama", "character", "key"];
 var currentDramaKey = null;
@@ -27,6 +27,37 @@ var emptyDrama = {
     dramaOrder: "00",
     dateInStory: "2000-01-01 00:00",
     dialogues:{},
+}
+
+var emptyTalk = {
+    order: "0",
+    type: "talk",
+    speaker: "",
+    emotion: "",
+    displayNameJP: "",
+    displayNameTW: "",
+    displayNameEN: "",
+    speechJP: "",
+    speechTW: "",
+    speechEN: ""
+}
+
+var emptyLabel ={
+    order: "0",
+    type: "label",
+    labelName: ""
+}
+
+var emptyKeyJump = {
+    order: "0",
+    type: "keyJump",
+    conditions: {}
+}
+
+var emptyKeyJumpCondition ={
+    order: "",
+    keys: [""],
+    targetLabel: ""
 }
 
 var testJson2 = {
@@ -119,8 +150,30 @@ function GetData(){
 }
 
 function DisplayData(){
-    var dataContentDiv = $('#dataContent')
-    dataContentDiv.empty();
+    let dataDiv = $('#data');
+    dataDiv.empty();
+    
+    let subjectsDiv = $('<div>').addClass('subjects');
+    subjectsDiv.attr('id', 'subjects');
+    let dataContentDiv = $('<dataContent>').addClass('dataContent');
+    dataContentDiv.attr('id', 'dataContent');
+
+    let sbjBtnDramas = $('<div>').addClass('subject');
+    sbjBtnDramas.attr('id', 'dramas').text('Dramas');
+    sbjBtnDramas.click(()=>DisplaySubject('dramas'));
+    let sbjBtnCharacters = $('<div>').addClass('subject');
+    sbjBtnCharacters.attr('id', 'characters').text('Characters');
+    sbjBtnCharacters.click(()=> DisplaySubject('characters'));
+    let sbjBtnKeys = $('<div>').addClass('subject');
+    sbjBtnKeys.attr('id', 'keys').text('Keys');
+    sbjBtnKeys.click(()=>DisplaySubject('keys'));
+
+
+    subjectsDiv.append([sbjBtnDramas, sbjBtnCharacters, sbjBtnKeys]);
+
+    dataDiv.append([subjectsDiv, dataContentDiv]);
+
+
     tmpAddSubjectButton();
     switch(currentSubject){
         case "dramas":
@@ -150,7 +203,6 @@ function tmpAddSubjectButton(){
     addSubBtn.click(()=>{
         let newSubject = selectSubjectType.val();
         console.log('newSubject = '+newSubject);
-        let newSubjectsObject = {};
         if(newSubject == "character"){
             let newCharacter = {type: 'character', name: 'John', age: 30};
             let newChaRef = push(ref(db, refProj + '/' + newSubject + 's'));
@@ -164,9 +216,51 @@ function tmpAddSubjectButton(){
     subjectsDiv.append([selectSubjectType, addSubBtn]);
 }
 
-function DisplayDramas(){
-    dramas = project.dramas;
+function DisplaySubject(sbjName){
+    currentSubject = sbjName;
+    $('.subject').removeClass('selected');
+    $('#'+sbjName).addClass('selected');
+
     var dataContentDiv = $('#dataContent')
+    dataContentDiv.empty();
+
+    let subjects = project[sbjName];
+    let subjectLength = Object.keys(subjects).length;
+    dataContentDiv.text('subjectLength ='+ subjectLength);
+    if(subjectLength <= 0){
+        dataContentDiv.text(sbjName + '的數量為0');
+    }else{
+        switch(sbjName){
+            case 'dramas':
+                DisplayDramas();
+                break;
+            case 'characters':
+                DisplayCharacters();
+                break;
+            case 'keys':
+                DisplayKeys();
+                break;
+        }
+    }
+
+
+}
+
+function DisplayCharacters(){
+    let characters = project.characters;
+    let characterContentDiv = $('<div>').addClass('characterContent');
+}
+
+function DisplayKeys(){}
+
+function DisplayDramas(){
+    currentSubject = "dramas";
+    $('.subject').removeClass('selected');
+    $('#dramas').addClass('selected');
+
+    let dramas = project.dramas;
+    var dataContentDiv = $('#dataContent')
+    dataContentDiv.empty();
     var sidebarDiv = $('<div>').addClass('sidebar');
     var dramaContentDiv = $('<div>').addClass('dramaContent');
     dramaContentDiv.attr('id', 'dramaContent');
@@ -182,7 +276,7 @@ function DisplayDramas(){
             let pagingContent = $('<div>').html(currentItem.dramaName + '<br>' + currentItem.dateInStory).addClass('pagingContent');
             pagingDiv.append([pagingOrder, pagingContent]);
             pagingDiv.attr({'data-key': dramaKey, 'dramaOrder': currentItem.dramaOrder});
-            pagingDiv.click(()=> pagingClickHandler(pagingDiv));
+            pagingDiv.click(()=> showDramaContents(pagingDiv));
             pagingDivArray.push(pagingDiv);
         });
         pagingDivArray.sort((divA, divB) => {
@@ -192,7 +286,7 @@ function DisplayDramas(){
         appendDatas();
         if(currentDramaKey == null) currentDramaKey = firstKey;
         let showPageDiv = $('.paging[data-key="' + currentDramaKey +'"]');
-        pagingClickHandler(showPageDiv);
+        showDramaContents(showPageDiv);
     }else{
         appendDatas();
         dramaContentDiv.text('no drama now.');
@@ -205,28 +299,20 @@ function DisplayDramas(){
     }
 }
 
-function pagingClickHandler(pagingDiv){
+async function showDramaContents(pagingDiv){
     $('.paging').removeClass('selected');
     $(pagingDiv).addClass('selected');
     $('#dramaContent').empty();
     let key = $(pagingDiv).attr('data-key');
     currentDramaKey = key;
-    let data = dramas[key];
+    let data = project.dramas[key];
     let dramaOrderRow = $('<div>').addClass('rowParent');
-    // let dramaOrderRowLeft = $('<div>').addClass('left');
     let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('leftTitle');
     let dramaOrderUpButton = $('<button>').text('▲').addClass('left');
     dramaOrderUpButton.click(()=>DramaOrderAdd(-1));
     let dramaOrderDisplay = $('<div>').text(data.dramaOrder).addClass('left');
     let dramaOrderDownButton = $('<button>').text('▼').addClass('left');
     dramaOrderDownButton.click(()=>DramaOrderAdd(1));
-    // let dramaOrderEdit = $('<input>').attr({type: 'number', class: 'quantity-input',
-    //  'value': data.dramaOrder, min: '1', class: 'left.input', id: 'dramaOrderEdit'});
-    //  dramaOrderEdit.data('previousValue', data.dramaOrder);
-    // dramaOrderEdit.change(function(){
-    //     let previousValue = $(this).data('previousValue');
-    //     ChangeDramaOrder(previousValue);
-    // });
     let dramaNameRow = $('<div>').addClass('rowParent');
     let dramaName = $('<div>').text('Drama Name:').attr({class: 'leftTitle'});
     let dramaNameData = $('<div>').text(data.dramaName).addClass('left');
@@ -246,6 +332,22 @@ function pagingClickHandler(pagingDiv){
      value: strTime, class: 'left', id: 'timeEdit'})
     let dateEditButton = $('<button>').text('Modify Date in Story').addClass('left');
     dateEditButton.click(() => EditDateInStory());
+
+    let dialogTitle = DOMmaker('div', 'dialogTitle').text('Dialog');
+    let dialogDiv = DOMmaker('div', 'dialogDiv', 'dialogDiv');
+    let addDialogDiv = DOMmaker('div', 'dialog', 'dialog');
+    let addDialogBtn = DOMmaker('button', 'addDialog', 'addDialogBtn');
+    addDialogBtn.text('add dialog');
+    addDialogBtn.click(()=>addNewDialog(newDialogType.val()));
+    // let dialogDiv = $('<div>').addClass('dialogDiv');
+    // dialogDiv.attr('id', 'dialogDiv');
+    // let addDialogDiv = $('<div>').addClass('addDialogDiv');
+    // addDialogDiv.attr('id', 'addDialogDiv');
+    let newDialogType = makeDropdownWithStringArray(['talk', 'label', 'keyJump']);
+    newDialogType.attr('id', 'newDialogType');
+    newDialogType.addClass('addDialog');
+    addDialogDiv.append([newDialogType, addDialogBtn, '<hr>']);
+    dialogDiv.append([addDialogDiv]);
     
     // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
     // let content = dramaName + dateInStory;
@@ -259,18 +361,58 @@ function pagingClickHandler(pagingDiv){
     dateInStoryRow.append([dateInStory, dateInStoryData, dateEdit, timeEdit, dateEditButton]);
     dramaOrderRow.append([dramaOrder, dramaOrderUpButton, dramaOrderDisplay, dramaOrderDownButton, delButton]);
     dramaNameRow.append([dramaName, dramaNameData, dramaNameEdit, dramaNameButton]);
-    $('#dramaContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow]);
+    $('#dramaContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow, dialogTitle, dialogDiv]);
     DivsSameWidth([dramaNameData, dateInStoryData]);
 }
 
-async function UpdateDramas(){
-    let snapshot = await get(dbRef);
-    if(snapshot.exists()){
-        dramas = snapshot.val();
-    }else{
-        console.error('snapshot not exist!')
+async function addNewDialog(dialogType){
+    let dialogToAdd; 
+    switch (dialogType) {
+        case "talk":
+            dialogToAdd = Object.assign(emptyTalk);
+            break;
+        case "label":
+            dialogToAdd = Object.assign(emptyLabel);
+            break;
+        case "keyJump":
+            dialogToAdd = Object.assign(emptyKeyJump);
+            let newCondition = Object.assign(emptyKeyJumpCondition);
+            newCondition.order = '1';
+            dialogToAdd.conditions = [newCondition];
+            break;
+        default:
+            return;
+            break;
     }
+    let order = 1;
+    let dialogs = project.dramas[currentDramaKey].dialogs;
+    if(dialogs === undefined){}
+    else if(Object.keys(dialogs).length === 0){}
+    else{
+        for (let dialogKey in dialogs){
+            let dialogOrder = parseInt((dialogs[dialogKey].order), 10); 
+            if(dialogOrder >= order)
+                order = dialogOrder + 1;
+        }
+    }
+    dialogToAdd.order = order;
+    
+    let dialogsPath = refDramas + "/" + currentDramaKey + "/dialogs"
+    let pushDialog = push(ref(db, dialogsPath));
+    set(pushDialog, dialogToAdd);
+    // console.log(dialogsLength);
 }
+
+
+
+// async function UpdateDramas(){
+//     let snapshot = await get(dbRef);
+//     if(snapshot.exists()){
+//         dramas = snapshot.val();
+//     }else{
+//         console.error('snapshot not exist!')
+//     }
+// }
 
 //雖然參數是num，但只有正和負的差異，0是正
 async function DramaOrderAdd(num){
@@ -369,7 +511,7 @@ async function ChangeDramaOrder(previousValue){
     previousValue = parseInt(previousValue, 10);
     let order = parseInt($('#dramaOrderEdit').val(), 10);
     let key = $('#dramaContent').attr('data-key');
-    await UpdateDramas();
+    // await UpdateDramas();
     let orderAndKeys = [];
     for(let dramaKey in dramas){
         let dramaOrder = parseInt(dramas[dramaKey].dramaOrder, 10);
@@ -521,7 +663,7 @@ async function deleteDrama(key){
     let currentDiv = $('.paging[data-key="' + key +'"]');
     let closestDiv = findClosestDiv(divs, currentDiv);
     if(closestDiv != null) {
-        pagingClickHandler(closestDiv);
+        showDramaContents(closestDiv);
     }    
     await remove(ref(db, refDramas + "/" + key));
     // await UpdateDramas();
@@ -553,4 +695,21 @@ function getTypeKeysInJson(dataObj, targetType){
     let tmpDramaKeys = Object.keys(dataObj).filter(
         key => dataObj[key].type == targetType);
     return tmpDramaKeys;
+}
+
+function makeDropdownWithStringArray(array){
+    let dropdown = $('<select>');
+    for(let i=0; i<array.length; i++){
+        let option = $('<option>');
+        option.text(array[i]);
+        option.val(array[i]);
+        dropdown.append(option);
+    }
+    return dropdown;
+}
+
+function DOMmaker(DOMtype, DOMclass, DOMid){
+    let dom = $('<' + DOMtype + '>').addClass(DOMclass);
+    if(DOMid !== undefined){dom.attr('id', DOMid);}
+    return dom;
 }
