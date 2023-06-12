@@ -19,6 +19,8 @@ var project = [];
 // var dramas = [];
 var currentSubject = "dramas";
 const subjectTypes = ["drama", "character", "key"];
+const dialogTypes = ["talk", "label", "keyJump"];
+const languages = ["JP", "EN", "TW"];
 var currentDramaKey = null;
 
 var emptyDrama = {
@@ -299,6 +301,8 @@ function DisplayDramas(){
     }
 }
 
+
+
 async function showDramaContents(pagingDiv){
     $('.paging').removeClass('selected');
     $(pagingDiv).addClass('selected');
@@ -332,38 +336,167 @@ async function showDramaContents(pagingDiv){
      value: strTime, class: 'left', id: 'timeEdit'})
     let dateEditButton = $('<button>').text('Modify Date in Story').addClass('left');
     dateEditButton.click(() => EditDateInStory());
-
-    let dialogTitle = DOMmaker('div', 'dialogTitle').text('Dialog');
-    let dialogDiv = DOMmaker('div', 'dialogDiv', 'dialogDiv');
-    let addDialogDiv = DOMmaker('div', 'dialog', 'dialog');
-    let addDialogBtn = DOMmaker('button', 'addDialog', 'addDialogBtn');
-    addDialogBtn.text('add dialog');
-    addDialogBtn.click(()=>addNewDialog(newDialogType.val()));
-    // let dialogDiv = $('<div>').addClass('dialogDiv');
-    // dialogDiv.attr('id', 'dialogDiv');
-    // let addDialogDiv = $('<div>').addClass('addDialogDiv');
-    // addDialogDiv.attr('id', 'addDialogDiv');
-    let newDialogType = makeDropdownWithStringArray(['talk', 'label', 'keyJump']);
-    newDialogType.attr('id', 'newDialogType');
-    newDialogType.addClass('addDialog');
-    addDialogDiv.append([newDialogType, addDialogBtn, '<hr>']);
-    dialogDiv.append([addDialogDiv]);
     
-    // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
-    // let content = dramaName + dateInStory;
-    // $('#dramaContent').html(content);
-    // $('#dramaContent').append(dramaOrder)
+    let languageDiv = DOMmaker('div', 'rowParent', 'languageDiv');
+    let mainLanguage = $('<div>').text('Main Language:').addClass('left');
+    let mainLanguageSelect = makeDropdownWithStringArray(languages).addClass('left');
+    mainLanguageSelect.attr('id', 'mainLanguageSelect');
+    let showSubLanguage = $('<div>').text('Show Sub Language').addClass('left').addClass('marginLeft');
+    let showSubLanguageCheckBox = $('<input>').attr('id', 'showSubLanguageCheckBox').addClass('left');
+    showSubLanguageCheckBox.attr('type','checkbox');
+    showSubLanguageCheckBox.change(()=> {
+        let left = $('.dialogTalkDivLeft');
+        let right = $('.dialogTalkDivRight');
+        let all = $('.dialogTalkDivAll');
+        let mainLang = $('#mainLanguageSelect').val();
+        let subLang = $('#subLanguageSelect').val();
+        let self = $('#showSubLanguageCheckBox');
+        if(self.prop('checked')){
+            //show
+            left.removeClass('hide');
+            DisplayTalk(left, mainLang);
+            right.removeClass('hide');
+            DisplayTalk(right, subLang);
+            all.addClass('hide');
+        }else{
+            //hide
+            all.removeClass('hide');
+            DisplayTalk(all, mainLang);
+            left.addClass('hide');
+            right.addClass('hide');
+        }
+    });
+    let subLanguage = $('<div>').text('Sub Language:').addClass('left').addClass('marginLeft');
+    let subLanguageSelect = makeDropdownWithStringArray(languages).addClass('left');
+    subLanguageSelect.attr('id', 'subLanguageSelect');
+    subLanguageSelect.change(()=>{
+        let right = $('.dialogTalkDivRight');
+        let subLang = $('#subLanguageSelect').val();
+        DisplayTalk(right, subLang);
+    });
+    languageDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
+
     $('#dramaContent').attr('data-key', key);
     $('#dramaContent').attr('dramaOrder', data.dramaOrder);
     let delButton = $('<button>').text('Delete Drama').addClass('right');
     delButton.click(() => deleteDrama(key));
     // dramaOrderRowLeft.append([dramaOrder, dramaOrderEdit])
-    dateInStoryRow.append([dateInStory, dateInStoryData, dateEdit, timeEdit, dateEditButton]);
     dramaOrderRow.append([dramaOrder, dramaOrderUpButton, dramaOrderDisplay, dramaOrderDownButton, delButton]);
     dramaNameRow.append([dramaName, dramaNameData, dramaNameEdit, dramaNameButton]);
-    $('#dramaContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow, dialogTitle, dialogDiv]);
+    dateInStoryRow.append([dateInStory, dateInStoryData, dateEdit, timeEdit, dateEditButton]);
+    $('#dramaContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow,languageDiv]);
+    
+    //Add Dialog Div
+    let dialogTitle = DOMmaker('div', 'dialogTitle');
+    let dialogTitleTxt = $('<div>').text('Dialog').addClass('dialogTitleTxt');
+    let dialogTitleSpace = $('<div>').addClass('fillSpace');
+    let dialogDivContainer = DOMmaker('div', 'dialogDivContainer', 'dialogDivContainer');
+    let addDialogDiv = DOMmaker('div', 'addDialogDiv', 'addDialogDiv');
+    
+    let newDialogType = makeDropdownWithStringArray(dialogTypes);
+    newDialogType.attr('id', 'newDialogType');
+    newDialogType.addClass('newDialogType');
+    let addDialogBtn = DOMmaker('button', 'addDialogBtn', 'addDialogBtn');
+    addDialogBtn.text('add dialog');
+    addDialogBtn.click(()=>addNewDialog(newDialogType.val()));
+    // addDialogDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
+    dialogTitle.append([dialogTitleTxt, dialogTitleSpace, newDialogType, addDialogBtn]);
+    dialogDivContainer.append([addDialogDiv]);
+
+    //Show Dialogs
+    DisplayDialogs(dialogDivContainer);
+    // DisplayTalk($('.dialogTalkDivAll'), $('#mainLanguageSelect').val());
+    
+    // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
+    // let content = dramaName + dateInStory;
+    // $('#dramaContent').html(content);
+    // $('#dramaContent').append(dramaOrder)
+    $('#dramaContent').append([dialogTitle, dialogDivContainer]);    
     DivsSameWidth([dramaNameData, dateInStoryData]);
 }
+
+function DisplayTalk(jQueryDiv, language){
+    let key = jQueryDiv.attr('key');
+    let talk = project.dramas[currentDramaKey].dialogs[key];
+    let displayName = talk['displayName'+language] + "tmpDisplayName" + language;
+    let speech = talk['speech'+language] + "tmpSpeech" + language;
+    let talkString = displayName+'<br>'+speech;
+    jQueryDiv.html(talkString);
+}
+
+function DisplayDialogs(dialogDivContainer) {
+    let dialogs = project.dramas[currentDramaKey].dialogs;
+    let mainLang = $('#mainLanguageSelect').val();
+    if(CheckObject(dialogs) == false){
+        dialogDivContainer.text('There is no dialog');
+        return;
+    }
+    let sortedDialogs = Object.entries(dialogs).sort((a, b)=>a.order - b.order);
+    sortedDialogs.forEach(([key, dialog])=>{
+        let dialogDiv = DOMmaker('div', 'dialog').attr('key', key);
+        let orderDiv = DOMmaker('div', 'dialogOrderDiv').attr('key', key);
+        let orderUpBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
+        orderUpBtn.text('▲');
+        let orderDownBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
+        orderDownBtn.text('▼');
+        let orderTxt = DOMmaker('div', 'dialogOrderTxt').attr('key', key);
+        orderTxt.text(dialog.order);
+        orderDiv.append([orderUpBtn, orderTxt, orderDownBtn]);
+        dialogDiv.append(orderDiv);
+        switch(dialog.type){
+            case 'talk':
+                let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
+                let speakerValue = dialog.speaker == ""? 'no speaker': dialog.speaker;
+                let speaker = DOMmaker('div').text(speakerValue);
+                speakerDiv.append(speaker);
+                let talkDiv = DOMmaker('div', 'dialogTalkDiv').attr('key', key);
+                let talkDivAll = DOMmaker('div', 'dialogTalkDivAll').attr('key', key);
+                let displayName = dialog['displayName' + mainLang] + 'tmpDisplayName' + mainLang;
+                let speech = dialog['speech' + mainLang] + 'tmpSpeech' + mainLang;
+                let txt = displayName + '<br>' + speech;
+                talkDivAll.html(txt);
+                let talkDivLeft = DOMmaker('div', 'dialogTalkDivLeft').attr('key', key);
+                talkDivLeft.addClass('hide');
+                let talkDivRight = DOMmaker('div', 'dialogTalkDivRight').attr('key', key);
+                talkDivRight.addClass('hide');
+                talkDiv.append(talkDivAll, talkDivLeft, talkDivRight);
+                dialogDiv.append([speakerDiv, talkDiv]);
+                break;
+            case 'label':
+                let labelDiv = DOMmaker('div', 'dialogLabelDiv');
+                break;
+            case 'keyJump':
+                break;
+            default:
+                return;
+        }
+        let editDiv = DOMmaker('div', 'dialogEditDiv');
+        let delDialogBtn = DOMmaker('button', 'delDialogButton');
+        delDialogBtn.attr('key', key);
+        delDialogBtn.attr('order', dialog.order);
+        delDialogBtn.text('Delete');
+        let addDialogBelowSelect = makeDropdownWithStringArray(dialogTypes);
+        addDialogBelowSelect.addClass('addDialogBelowSelect');
+        addDialogBelowSelect.attr('key', key);
+        let addDialogBelowBtn = DOMmaker('button', 'addDialogBelowBtn');
+        addDialogBelowBtn.attr('key', key);
+        addDialogBelowBtn.attr('order', dialog.order);
+        addDialogBelowBtn.text('▼ Add Dialog');
+        // let delDialogDiv = DOMmaker('div', 'delDialogDiv');
+        // delDialogDiv.append(delDialogBtn);
+        
+        editDiv.append([delDialogBtn, '<hr>', addDialogBelowSelect,'<br>', addDialogBelowBtn]);
+
+        dialogDiv.append([editDiv]);
+        dialogDivContainer.append(dialogDiv);
+        
+        
+        let speakerDiv = DOMmaker('div', 'speakerDiv');
+        let speechDiv = DOMmaker('div', 'speechDiv');
+        
+    })
+}
+
 
 async function addNewDialog(dialogType){
     let dialogToAdd; 
@@ -386,8 +519,7 @@ async function addNewDialog(dialogType){
     }
     let order = 1;
     let dialogs = project.dramas[currentDramaKey].dialogs;
-    if(dialogs === undefined){}
-    else if(Object.keys(dialogs).length === 0){}
+    if(CheckObject(dialogs) == false){}
     else{
         for (let dialogKey in dialogs){
             let dialogOrder = parseInt((dialogs[dialogKey].order), 10); 
@@ -401,6 +533,12 @@ async function addNewDialog(dialogType){
     let pushDialog = push(ref(db, dialogsPath));
     set(pushDialog, dialogToAdd);
     // console.log(dialogsLength);
+}
+
+function CheckObject(obj){
+    if(obj === undefined){return false;}
+    else if(Object.keys(obj).length === 0){return false;}
+    else {return true;}
 }
 
 

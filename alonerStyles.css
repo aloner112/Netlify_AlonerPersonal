@@ -17,6 +17,10 @@ body{
     position: relative;
 }
 
+.fillSpace{
+    flex-grow: 1;
+}
+
 .subjects{
     margin-top: 20px;
     margin-left: 20px;
@@ -24,7 +28,6 @@ body{
     display: flex;
 }
 .subject{
-    font-family: 'Bowlby One SC', cursive;
     font-size: 18px;
     margin-top: 20px;
     margin-left: 10px;
@@ -65,22 +68,94 @@ body{
     padding-left: 5px;
     font-family: 'Orbitron', sans-serif;
     font-size: 12px;
-    background: linear-gradient(to left, transparent 10%, rgb(184, 184, 184));
+    background: linear-gradient(to left, transparent 10%, rgb(210, 210, 210));
+    display: flex;
 }
 
-#dialogDiv{
+.dialogTitleTxt{
+    display: flex;
+    align-items: flex-end;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+}
+
+#dialogDivContainer{
     border: 1px solid #494949;
     margin-bottom: 10px;
+    /*padding: 10px;*/
 }
 
 .dialog{
     padding: 5px;
+    display: flex;
+    border-bottom: 1px dashed #494949;
 }
 
 .addDialog{
-    margin-top: 1px;
+    margin-top: 10px;
     margin-left: 10px;
     margin-bottom: 1px;
+    display: flex;
+}
+
+.dialogOrderDiv{
+    width: 30px;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    margin-right: 5px;
+    /*background-color: #eab0dc;*/
+}
+.dialogSpeakerDiv{
+    padding-left: 5px;
+    width: 200px;
+    background-color: #eab0dc;
+}
+.dialogTalkDiv{
+    flex-grow: 1;
+    background-color: rgb(200, 200, 180);
+    display: flex;
+}
+
+.dialogTalkDivAll{
+    width: 100%;
+    padding-left: 5px;
+    background-color: rgb(250, 230, 250);
+}
+.dialogTalkDivAll.hide{
+    display: none;
+    width: 100%;
+    padding-left: 5px;
+    background-color: rgb(250, 230, 250);
+}
+.dialogTalkDivLeft{
+    width: 50%;
+    padding-left: 5px;
+    background-color: rgb(250, 180, 250);
+}
+.dialogTalkDivLeft.hide{
+    display: none;
+    width: 50%;
+    padding-left: 5px;
+    background-color: rgb(250, 180, 250);
+}
+.dialogTalkDivRight{
+    width: 50%;
+    padding-left: 5px;
+    background-color: rgb(180, 250, 250);
+}
+.dialogTalkDivRight.hide{
+    display: none;
+    width: 50%;
+    padding-left: 5px;
+    background-color: rgb(180, 250, 250);
+}
+.dialogOrderTxt{
+    text-align: center;
+}
+.dialogOrderButton{
+    width: 100%;
+    display: block;
 }
 
 .sidebar {
@@ -158,6 +233,13 @@ body{
     text-align: center;
     font-family: 'Noto Sans TC', sans-serif;
     font-weight: 400;
+}
+.left.marginLeft{
+    margin-left: 30px;
+}
+#showSubLanguageCheckBox{
+    width: 20px;
+    height: 20px;
 }
 .leftTitle{
     float: left; /* 左對齊 */
