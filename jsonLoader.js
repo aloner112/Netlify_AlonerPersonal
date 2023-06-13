@@ -36,12 +36,12 @@ var emptyTalk = {
     type: "talk",
     speaker: "",
     emotion: "",
-    displayNameJP: "",
-    displayNameTW: "",
-    displayNameEN: "",
-    speechJP: "",
-    speechTW: "",
-    speechEN: ""
+    // displayNameJP: "",
+    // displayNameTW: "",
+    // displayNameEN: "",
+    // speechJP: "",
+    // speechTW: "",
+    // speechEN: ""
 }
 
 var emptyLabel ={
@@ -531,13 +531,19 @@ async function addNewDialog(dialogType){
     let dialogToAdd; 
     switch (dialogType) {
         case "talk":
-            dialogToAdd = Object.assign(emptyTalk);
+            dialogToAdd = Object.assign({}, emptyTalk);
+            languages.forEach(language =>{
+                let displayNameProp = 'displayName' + language;
+                let speechProp = 'speech' + language;
+                dialogToAdd[displayNameProp] = 'KR';
+                dialogToAdd[speechProp] = 'KR';
+            })
             break;
         case "label":
-            dialogToAdd = Object.assign(emptyLabel);
+            dialogToAdd = Object.assign({}, emptyLabel);
             break;
         case "keyJump":
-            dialogToAdd = Object.assign(emptyKeyJump);
+            dialogToAdd = Object.assign({}, emptyKeyJump);
             let newCondition = Object.assign(emptyKeyJumpCondition);
             newCondition.order = '1';
             dialogToAdd.conditions = [newCondition];
