@@ -20,7 +20,7 @@ var project = [];
 var currentSubject = "dramas";
 const subjectTypes = ["drama", "character", "key"];
 const dialogTypes = ["talk", "label", "keyJump"];
-const languages = ["JP", "EN", "TW"];
+const languages = ["JP", "EN", "TW", "KR"];
 var currentDramaKey = null;
 
 var emptyDrama = {
@@ -425,9 +425,31 @@ async function showDramaContents(pagingDiv){
 function DisplayTalk(jQueryDiv, language){
     let key = jQueryDiv.attr('key');
     let talk = project.dramas[currentDramaKey].dialogs[key];
-    let displayName = talk['displayName'+language] + "tmpDisplayName" + language;
-    let speech = talk['speech'+language] + "tmpSpeech" + language;
-    let talkString = displayName+'<br>'+speech;
+    let talkString = '';
+    if(talk == undefined){
+        talkString = 'dialogs[' + key + '] is undefined';
+        jQueryDiv.html(talkString);
+        return;
+    }
+    let displayName = talk['displayName'+language];
+    if(displayName == undefined)
+    {
+        displayName = "talk['displayName'+"+language+"] is undefined";
+    }
+    else
+    {
+        displayName += " tmpDisplayName" + language;
+    }
+    let speech = talk['speech'+language];
+    if(speech == undefined)
+    {
+        speech = "talk['speech'+"+language+"] is undefined";
+    }
+    else
+    {
+        speech += " tmpSpeech" + language;
+    }
+    talkString = displayName+'<br>'+speech;
     jQueryDiv.html(talkString);
 }
 
