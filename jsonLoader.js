@@ -779,7 +779,7 @@ function addNewDramaPagingButton(){
 }
 
 async function addNewDrama(){
-    let pushRef = push(dbRef);
+    let pushRef = push(ref(db, refDramas));
     let newDrama = await generateEmptyDrama(db, refDramas);
     await set(pushRef, newDrama);
     let snapshot = await get(pushRef);
