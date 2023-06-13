@@ -341,6 +341,13 @@ async function showDramaContents(pagingDiv){
     let mainLanguage = $('<div>').text('Main Language:').addClass('left');
     let mainLanguageSelect = makeDropdownWithStringArray(languages).addClass('left');
     mainLanguageSelect.attr('id', 'mainLanguageSelect');
+    mainLanguageSelect.change(()=>{
+        let all = $('.dialogTalkDivAll');
+        let left = $('.dialogTalkDivLeft');
+        let mainLang = $('#mainLanguageSelect').val();
+        DisplayTalk(left, mainLang);
+        DisplayTalk(all, mainLang);
+    });
     let showSubLanguage = $('<div>').text('Show Sub Language').addClass('left').addClass('marginLeft');
     let showSubLanguageCheckBox = $('<input>').attr('id', 'showSubLanguageCheckBox').addClass('left');
     showSubLanguageCheckBox.attr('type','checkbox');
