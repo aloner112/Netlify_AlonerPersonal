@@ -603,7 +603,6 @@ async function ObjectOrderAdd(num, nowOrderString, nowKey, refPath, orderPropNam
         console.log('Drama Order 不能小於1');
         return;
     }
-    console.log(refPath);
     let objs = getDataByPath(refPath);
     let objKeys = Object.keys(objs);
     objKeys.sort((a, b)=> {
@@ -621,7 +620,6 @@ async function ObjectOrderAdd(num, nowOrderString, nowKey, refPath, orderPropNam
     let datasToSwitch = [];
     objKeys.forEach(nowObjKey =>{
         let nowObjOrder = parseInt(objs[nowObjKey][orderPropName], 10);
-        console.log('nowObjOrder = '+ nowObjOrder);
         var pushData = {'order': nowObjOrder, 'dataKey': nowObjKey};
         if(num >= 0){
             if(nowObjOrder > nowOrder) {
