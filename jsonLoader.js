@@ -35,13 +35,7 @@ var emptyTalk = {
     order: "0",
     type: "talk",
     speaker: "",
-    emotion: "",
-    // displayNameJP: "",
-    // displayNameTW: "",
-    // displayNameEN: "",
-    // speechJP: "",
-    // speechTW: "",
-    // speechEN: ""
+    emotion: ""
 }
 
 var emptyLabel ={
@@ -313,10 +307,14 @@ async function showDramaContents(pagingDiv){
     let dramaOrderRow = $('<div>').addClass('rowParent');
     let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('leftTitle');
     let dramaOrderUpButton = $('<button>').text('▲').addClass('left');
-    dramaOrderUpButton.click(()=>DramaOrderAdd(-1));
+    dramaOrderUpButton.click(()=> {
+        ObjectOrderAdd(-1, data.dramaOrder, currentDramaKey, 'dramas', 'dramaOrder');
+    });
     let dramaOrderDisplay = $('<div>').text(data.dramaOrder).addClass('left');
     let dramaOrderDownButton = $('<button>').text('▼').addClass('left');
-    dramaOrderDownButton.click(()=>DramaOrderAdd(1));
+    dramaOrderDownButton.click(()=> {
+        ObjectOrderAdd(1, data.dramaOrder, currentDramaKey, 'dramas', 'dramaOrder');
+    });
     let dramaNameRow = $('<div>').addClass('rowParent');
     let dramaName = $('<div>').text('Drama Name:').attr({class: 'leftTitle'});
     let dramaNameData = $('<div>').text(data.dramaName).addClass('left');
@@ -458,33 +456,51 @@ function DisplayTalk(jQueryDiv, language){
 
 function DisplayDialogs(dialogDivContainer) {
     let dialogs = project.dramas[currentDramaKey].dialogs;
+    // console.log(JSON.stringify(dialogs));
     let mainLang = $('#mainLanguageSelect').val();
     if(CheckObject(dialogs) == false){
         dialogDivContainer.text('There is no dialog');
         return;
     }
-    let sortedDialogs = Object.entries(dialogs).sort((a, b)=>a.order - b.order);
-    sortedDialogs.forEach(([key, dialog])=>{
+    let dialogKeys = Object.keys(dialogs);
+    dialogKeys.sort((a, b)=> dialogs[a].order - dialogs[b].order);
+    
+    // return;
+    // sortedDialogs.sort((a, b)=> {
+    //     let keyA = a[0];
+    //     let keyB = b[0];
+    //     console.log(JSON.stringify(a[keyA]));
+    //     console.log('a[keyA].order = '+a[keyA].order + ', b[keyB].order = '+b[keyB].order);
+    //     return a[keyA].order - b[keyB].order;
+    // });
+    dialogKeys.forEach((key)=>{
+        let nowRefPath = 'dramas/'+ currentDramaKey +'/dialogs';
         let dialogDiv = DOMmaker('div', 'dialog').attr('key', key);
         let orderDiv = DOMmaker('div', 'dialogOrderDiv').attr('key', key);
         let orderUpBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
         orderUpBtn.text('▲');
+        $(orderUpBtn).click(()=>{
+            ObjectOrderAdd(-1, dialogs[key].order, key, nowRefPath, 'order');
+        })
         let orderDownBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
         orderDownBtn.text('▼');
+        $(orderDownBtn).click(()=>{
+            ObjectOrderAdd(1, dialogs[key].order, key, nowRefPath, 'order');
+        })
         let orderTxt = DOMmaker('div', 'dialogOrderTxt').attr('key', key);
-        orderTxt.text(dialog.order);
+        orderTxt.text(dialogs[key].order);
         orderDiv.append([orderUpBtn, orderTxt, orderDownBtn]);
         dialogDiv.append(orderDiv);
-        switch(dialog.type){
+        switch(dialogs[key].type){
             case 'talk':
                 let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
-                let speakerValue = dialog.speaker == ""? 'no speaker': dialog.speaker;
+                let speakerValue = dialogs[key].speaker == ""? 'no speaker': dialogs[key].speaker;
                 let speaker = DOMmaker('div').text(speakerValue);
                 speakerDiv.append(speaker);
                 let talkDiv = DOMmaker('div', 'dialogTalkDiv').attr('key', key);
                 let talkDivAll = DOMmaker('div', 'dialogTalkDivAll').attr('key', key);
-                let displayName = dialog['displayName' + mainLang] + 'tmpDisplayName' + mainLang;
-                let speech = dialog['speech' + mainLang] + 'tmpSpeech' + mainLang;
+                let displayName = dialogs[key]['displayName' + mainLang] + 'tmpDisplayName' + mainLang;
+                let speech = dialogs[key]['speech' + mainLang] + 'tmpSpeech' + mainLang;
                 let txt = displayName + '<br>' + speech;
                 talkDivAll.html(txt);
                 let talkDivLeft = DOMmaker('div', 'dialogTalkDivLeft').attr('key', key);
@@ -505,14 +521,14 @@ function DisplayDialogs(dialogDivContainer) {
         let editDiv = DOMmaker('div', 'dialogEditDiv');
         let delDialogBtn = DOMmaker('button', 'delDialogButton');
         delDialogBtn.attr('key', key);
-        delDialogBtn.attr('order', dialog.order);
+        delDialogBtn.attr('order', dialogs[key].order);
         delDialogBtn.text('Delete');
         let addDialogBelowSelect = makeDropdownWithStringArray(dialogTypes);
         addDialogBelowSelect.addClass('addDialogBelowSelect');
         addDialogBelowSelect.attr('key', key);
         let addDialogBelowBtn = DOMmaker('button', 'addDialogBelowBtn');
         addDialogBelowBtn.attr('key', key);
-        addDialogBelowBtn.attr('order', dialog.order);
+        addDialogBelowBtn.attr('order', dialogs[key].order);
         addDialogBelowBtn.text('▼ Add Dialog');
         // let delDialogDiv = DOMmaker('div', 'delDialogDiv');
         // delDialogDiv.append(delDialogBtn);
@@ -581,48 +597,46 @@ function CheckObject(obj){
 
 
 //雖然參數是num，但只有正和負的差異，0是正
-async function DramaOrderAdd(num){
-    let nowOrderString = $('#dramaContent').attr('dramaOrder');
+async function ObjectOrderAdd(num, nowOrderString, nowKey, refPath, orderPropName){
     let nowOrder = parseInt(nowOrderString, 10);
-    let nowKey = $('#dramaContent').attr('data-key');
-
     if(num < 0 && nowOrder <= 1) {
         console.log('Drama Order 不能小於1');
         return;
-    } //Drama Order 不能小於1
-    let divs = $('.paging[dramaOrder]').toArray();
-    divs.sort((a, b)=>{
-        let aValue = parseInt(a.getAttribute('dramaOrder'), 10);
-        let bValue = parseInt(b.getAttribute('dramaOrder'), 10);
-        return aValue - bValue;
-    });
-    divs.reverse();
-    if(num >= 0 && nowOrder >= divs.length){
+    }
+    console.log(refPath);
+    let objs = getDataByPath(refPath);
+    let objKeys = Object.keys(objs);
+    objKeys.sort((a, b)=> {
+        let aOrder = parseInt(objs[a][orderPropName], 10);
+        let bOrder = parseInt(objs[b][orderPropName], 10);
+        return aOrder - bOrder;
+    })
+    objKeys.reverse();
+    
+    if(num >= 0 && nowOrder >= objKeys.length){
         console.log('若Drama Order大於或等於目前最大的order值，則不改動order');
-        return; //若Drama Order大於或等於目前最大的order值，則不改動order
+        return;
     }
     
     let datasToSwitch = [];
-    divs.forEach(nowDiv =>{
-        let nowDivOrder = $(nowDiv).attr('dramaOrder');
-        let nowDivKey = $(nowDiv).attr('data-key');
-        var pushData = {'order': nowDivOrder, 'dataKey': nowDivKey};
-        // console.log('nowDivOrder = '+ nowDivOrder + ', nowOrder = '+nowOrder);
+    objKeys.forEach(nowObjKey =>{
+        let nowObjOrder = parseInt(objs[nowObjKey][orderPropName], 10);
+        console.log('nowObjOrder = '+ nowObjOrder);
+        var pushData = {'order': nowObjOrder, 'dataKey': nowObjKey};
         if(num >= 0){
-            if(nowDivOrder > nowOrder) {
+            if(nowObjOrder > nowOrder) {
                 datasToSwitch.push(pushData);
             }
         }
         else{
-            if(nowDivOrder < nowOrder){
+            if(nowObjOrder < nowOrder){
                 datasToSwitch.push(pushData);
             }
         }
     });
-    // console.log('datasToSwitch.length = '+datasToSwitch.length);
     if(datasToSwitch.length == 0) {
         console.log('沒有資料的order可替換');
-        return; //沒有資料的order可替換
+        return;
     }
     datasToSwitch.sort((a, b)=>{
         let aValue = parseInt(a.order, 10);
@@ -634,18 +648,17 @@ async function DramaOrderAdd(num){
     }
     let dataToSwitchKey = datasToSwitch[0].dataKey;
     let dataToSwitchOrder = parseInt(datasToSwitch[0].order);
-    // console.log('dataToSwitchOrder: ' + dataToSwitchOrder);
     if(Math.abs(nowOrder - dataToSwitchOrder) == 1){
         let updateList = [];
         //替換order
-        let updateList1 = {dramaOrder: nowOrder};
-        let updateList2 = {dramaOrder: dataToSwitchOrder};
+        let updateList1 = {[orderPropName]: nowOrder};
+        let updateList2 = {[orderPropName]: dataToSwitchOrder};
         updateList.push({
-            refPath: refDramas + '/' + dataToSwitchKey,
+            refPath: refProj +'/' + refPath + '/' + dataToSwitchKey,
             updateList: updateList1
         });
         updateList.push({
-            refPath: refDramas + '/' + nowKey,
+            refPath: refProj +'/' +refPath + '/' + nowKey,
             updateList: updateList2
         });
 
@@ -654,14 +667,14 @@ async function DramaOrderAdd(num){
     }else{
         //如果目標Order沒被占用，直接寫入order
         let addAmount = num >= 0 ? 1 : -1;
-        update(ref(db, refDramas + '/' + nowKey), {dramaOrder: nowOrder + addAmount});
+        update(ref(db, refProj +'/' +refPath + '/' + nowKey), {[orderPropName]: nowOrder + addAmount});
     }
 }
 
+//updateObjs為一個Array，
+//每個內容成員有兩個物件，一個是refPath，以string紀載路徑
+//另一個是updateList，這是一個物件，紀載要更新的key以及內容
 async function batchUpdateDatabase(updateObjs){
-    //updateObjs為一個Array，
-    //每個內容成員有兩個物件，一個是refPath，以string紀載路徑
-    //另一個是updateList，這是一個物件，紀載要更新的key以及內容
     
     let promises = updateObjs.map(item =>{
         if(CheckObject(item.refPath) != true){
@@ -861,7 +874,6 @@ function reorderDatas(refPath, orderPropName){
     if(isObject(parentObj) == false) {
         return;
     }
-    let logStr = '';
     let objArray = [];
     for(let key in parentObj){
         let orderObj = {
@@ -872,7 +884,6 @@ function reorderDatas(refPath, orderPropName){
             updateList: {orderObj}          
         };
         objArray.push(obj);
-        // logStr += 'key = ' + key + ', order = ' + parentObj[key][orderPropName] + '\n';
     }
     objArray.sort((a, b)=>a['updateList'][orderPropName] - b['updateList'][orderPropName]);
     let modifyList = [];
@@ -885,7 +896,6 @@ function reorderDatas(refPath, orderPropName){
         }        
     }
     batchUpdateDatabase(modifyList);
-    // console.log(objArray);
 }
 
 function isObject(target){
