@@ -176,7 +176,7 @@ function DisplayData(){
     dataDiv.append([subjectsDiv, dataContentDiv]);
 
 
-    tmpAddSubjectButton();
+    // tmpAddSubjectButton();
     switch(currentSubject){
         case "dramas":
             DisplayDramas();
@@ -405,7 +405,10 @@ async function showDramaContents(pagingDiv){
     newDialogType.addClass('newDialogType');
     let addDialogBtn = DOMmaker('button', 'addDialogBtn', 'addDialogBtn');
     addDialogBtn.text('add dialog');
-    addDialogBtn.click(()=>addNewDialog(newDialogType.val()));
+    addDialogBtn.click(()=> {
+        // reorderDatas('dramas', 'dramaOrder');
+        // addNewDialog(newDialogType.val());
+    });
     // addDialogDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
     dialogTitle.append([dialogTitleTxt, dialogTitleSpace, newDialogType, addDialogBtn]);
     dialogDivContainer.append([addDialogDiv]);
@@ -577,16 +580,6 @@ function CheckObject(obj){
 }
 
 
-
-// async function UpdateDramas(){
-//     let snapshot = await get(dbRef);
-//     if(snapshot.exists()){
-//         dramas = snapshot.val();
-//     }else{
-//         console.error('snapshot not exist!')
-//     }
-// }
-
 //雖然參數是num，但只有正和負的差異，0是正
 async function DramaOrderAdd(num){
     let nowOrderString = $('#dramaContent').attr('dramaOrder');
@@ -645,36 +638,57 @@ async function DramaOrderAdd(num){
     if(Math.abs(nowOrder - dataToSwitchOrder) == 1){
         let updateList = [];
         //替換order
+        let updateList1 = {dramaOrder: nowOrder};
+        let updateList2 = {dramaOrder: dataToSwitchOrder};
         updateList.push({
-            dataKey: dataToSwitchKey,
-            dataOrder: nowOrder
+            refPath: refDramas + '/' + dataToSwitchKey,
+            updateList: updateList1
         });
         updateList.push({
-            dataKey: nowKey,
-            dataOrder: dataToSwitchOrder
+            refPath: refDramas + '/' + nowKey,
+            updateList: updateList2
         });
-        
-        let promises = updateList.map((item)=>{
-            let itemRef = ref(db, refDramas + '/' + item.dataKey);
-            return runTransaction(itemRef, (currentData) =>{
-                if(currentData){
-                    currentData.dramaOrder = item.dataOrder;
-                    return currentData;
-                }else{
-                    return;
-                }
-            });
-        });
-        try{
-            await Promise.all(promises);
-        }catch(error){
-            console.error(error);
-        }
 
+        batchUpdateDatabase(updateList);
+        
     }else{
         //如果目標Order沒被占用，直接寫入order
         let addAmount = num >= 0 ? 1 : -1;
         update(ref(db, refDramas + '/' + nowKey), {dramaOrder: nowOrder + addAmount});
+    }
+}
+
+async function batchUpdateDatabase(updateObjs){
+    //updateObjs為一個Array，
+    //每個內容成員有兩個物件，一個是refPath，以string紀載路徑
+    //另一個是updateList，這是一個物件，紀載要更新的key以及內容
+    
+    let promises = updateObjs.map(item =>{
+        if(CheckObject(item.refPath) != true){
+            console.log('there is no refPath');
+            return;
+        }
+        if(isObject(item.updateList) == false){
+            console.log('item.updateList is not a object');
+            return;
+        }
+        let itemRef = ref(db, item.refPath);
+        let updateList = item.updateList;
+        return runTransaction(itemRef, (currentData)=>{
+            if(currentData){
+                for(let key in updateList){
+                    currentData[key] = updateList[key];
+                }
+                return currentData;
+            }else{
+                return;
+            }
+        })
+    })
+    try{
+        await Promise.all(promises);
+    }catch(error){
+        console.error(error);
     }
 }
 
@@ -836,10 +850,64 @@ async function deleteDrama(key){
     let currentDiv = $('.paging[data-key="' + key +'"]');
     let closestDiv = findClosestDiv(divs, currentDiv);
     if(closestDiv != null) {
-        showDramaContents(closestDiv);
-    }    
+        currentDramaKey = $(closestDiv).attr('data-key');
+    }
     await remove(ref(db, refDramas + "/" + key));
-    // await UpdateDramas();
+    reorderDatas('dramas', 'dramaOrder');
+}
+
+function reorderDatas(refPath, orderPropName){
+    let parentObj = getDataByPath(refPath);
+    if(isObject(parentObj) == false) {
+        return;
+    }
+    let logStr = '';
+    let objArray = [];
+    for(let key in parentObj){
+        let orderObj = {
+            [orderPropName]: parentObj[key][orderPropName]
+        };
+        let obj = {
+            refPath: refProj +'/'+ refPath + '/' + key,
+            updateList: {orderObj}          
+        };
+        objArray.push(obj);
+        // logStr += 'key = ' + key + ', order = ' + parentObj[key][orderPropName] + '\n';
+    }
+    objArray.sort((a, b)=>a['updateList'][orderPropName] - b['updateList'][orderPropName]);
+    let modifyList = [];
+    for(let i = 0; i < objArray.length; i++){
+        let nowObj = objArray[i];
+        let expectedOrder = i+1;
+        if(nowObj['updateList'][orderPropName] != expectedOrder){
+            nowObj['updateList'][orderPropName] = expectedOrder;
+            modifyList.push(nowObj);
+        }        
+    }
+    batchUpdateDatabase(modifyList);
+    // console.log(objArray);
+}
+
+function isObject(target){
+    if(target === undefined){
+        console.log('refPath is undefined');
+        return false;
+    }
+    if(typeof target !== 'object' ){
+        console.log('refPath is not a object');
+        return false;
+    }
+    if(target === null){
+        console.log('refPath is null');
+        return false;
+    }
+    return true;
+}
+
+function getDataByPath(refPath){
+    //refPath不用寫'projects/testProject01/'
+    let pathParts = refPath.split('/');
+    return pathParts.reduce((obj, part)=> obj[part], project);
 }
 
 //決定當刪除一個drama時，要選取哪一個drama
