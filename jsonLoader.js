@@ -597,13 +597,13 @@ function CheckObject(obj){
 
 
 //雖然參數是num，但只有正和負的差異，0是正
-async function ObjectOrderAdd(num, nowOrderString, nowKey, refPath, orderPropName){
+async function ObjectOrderAdd(num, nowOrderString, nowKey, parentPath, orderPropName){
     let nowOrder = parseInt(nowOrderString, 10);
     if(num < 0 && nowOrder <= 1) {
         console.log('Drama Order 不能小於1');
         return;
     }
-    let objs = getDataByPath(refPath);
+    let objs = getDataByPath(parentPath);
     let objKeys = Object.keys(objs);
     objKeys.sort((a, b)=> {
         let aOrder = parseInt(objs[a][orderPropName], 10);
@@ -652,11 +652,11 @@ async function ObjectOrderAdd(num, nowOrderString, nowKey, refPath, orderPropNam
         let updateList1 = {[orderPropName]: nowOrder};
         let updateList2 = {[orderPropName]: dataToSwitchOrder};
         updateList.push({
-            refPath: refProj +'/' + refPath + '/' + dataToSwitchKey,
+            refPath: refProj +'/' + parentPath + '/' + dataToSwitchKey,
             updateList: updateList1
         });
         updateList.push({
-            refPath: refProj +'/' +refPath + '/' + nowKey,
+            refPath: refProj +'/' +parentPath + '/' + nowKey,
             updateList: updateList2
         });
 
@@ -665,7 +665,7 @@ async function ObjectOrderAdd(num, nowOrderString, nowKey, refPath, orderPropNam
     }else{
         //如果目標Order沒被占用，直接寫入order
         let addAmount = num >= 0 ? 1 : -1;
-        update(ref(db, refProj +'/' +refPath + '/' + nowKey), {[orderPropName]: nowOrder + addAmount});
+        update(ref(db, refProj +'/' +parentPath + '/' + nowKey), {[orderPropName]: nowOrder + addAmount});
     }
 }
 
@@ -867,8 +867,8 @@ async function deleteDrama(key){
     reorderDatas('dramas', 'dramaOrder');
 }
 
-function reorderDatas(refPath, orderPropName){
-    let parentObj = getDataByPath(refPath);
+function reorderDatas(parentPath, orderPropName){
+    let parentObj = getDataByPath(parentPath);
     if(isObject(parentObj) == false) {
         return;
     }
@@ -878,7 +878,7 @@ function reorderDatas(refPath, orderPropName){
             [orderPropName]: parentObj[key][orderPropName]
         };
         let obj = {
-            refPath: refProj +'/'+ refPath + '/' + key,
+            refPath: refProj +'/'+ parentPath + '/' + key,
             updateList: {orderObj}          
         };
         objArray.push(obj);
