@@ -523,6 +523,9 @@ function DisplayDialogs(dialogDivContainer) {
         delDialogBtn.attr('key', key);
         delDialogBtn.attr('order', dialogs[key].order);
         delDialogBtn.text('Delete');
+        $(delDialogBtn).click(()=>{
+            deleteDataWithOrder(key, 'order', nowRefPath);
+        });
         let addDialogBelowSelect = makeDropdownWithStringArray(dialogTypes);
         addDialogBelowSelect.addClass('addDialogBelowSelect');
         addDialogBelowSelect.attr('key', key);
@@ -651,16 +654,16 @@ async function ObjectOrderAdd(num, nowOrderString, nowKey, parentPath, orderProp
         //替換order
         let updateList1 = {[orderPropName]: nowOrder};
         let updateList2 = {[orderPropName]: dataToSwitchOrder};
-        updateList.push({
-            refPath: refProj +'/' + parentPath + '/' + dataToSwitchKey,
-            updateList: updateList1
-        });
-        updateList.push({
-            refPath: refProj +'/' +parentPath + '/' + nowKey,
-            updateList: updateList2
-        });
+        updateList.push(updateObjMaker(dataToSwitchKey, parentPath,updateList1));
+        updateList.push(updateObjMaker(nowKey, parentPath,updateList2));
 
-        batchUpdateDatabase(updateList);
+        let promises = await batchUpdateDatabase(updateList);
+
+        try{
+            await Promise.all(promises);
+        }catch(error){
+            console.error(error);
+        }
         
     }else{
         //如果目標Order沒被占用，直接寫入order
@@ -669,19 +672,25 @@ async function ObjectOrderAdd(num, nowOrderString, nowKey, parentPath, orderProp
     }
 }
 
+function updateObjMaker(key, parentPath, objValues){
+    let updateObj = {
+        refPath: refProj +'/' +parentPath + '/' + key,
+        updateList: objValues
+    }
+    return updateObj;
+}
+
 //updateObjs為一個Array，
 //每個內容成員有兩個物件，一個是refPath，以string紀載路徑
 //另一個是updateList，這是一個物件，紀載要更新的key以及內容
 async function batchUpdateDatabase(updateObjs){
     
     let promises = updateObjs.map(item =>{
-        if(CheckObject(item.refPath) != true){
-            console.log('there is no refPath');
-            return;
+        if(CheckObject(item.refPath) !== true){
+            throw new Error('there is no refPath');
         }
-        if(isObject(item.updateList) == false){
-            console.log('item.updateList is not a object');
-            return;
+        if(isObject(item.updateList) === false){
+            throw new Error('item.updateList is not a object');
         }
         let itemRef = ref(db, item.refPath);
         let updateList = item.updateList;
@@ -692,15 +701,11 @@ async function batchUpdateDatabase(updateObjs){
                 }
                 return currentData;
             }else{
-                return;
+                throw new Error('Current data does not exist');
             }
         })
     })
-    try{
-        await Promise.all(promises);
-    }catch(error){
-        console.error(error);
-    }
+    return promises;
 }
 
 //指定數字來變更Drama Order的方法，有bug，暫不使用。
@@ -864,12 +869,70 @@ async function deleteDrama(key){
         currentDramaKey = $(closestDiv).attr('data-key');
     }
     await remove(ref(db, refDramas + "/" + key));
-    reorderDatas('dramas', 'dramaOrder');
+    await reorderDatas('dramas', 'dramaOrder');
 }
 
-function reorderDatas(parentPath, orderPropName){
+async function deleteDataWithOrder(key, orderPropName, parentRef){
+    let delObj = getDataByPath(parentRef + '/' + key);
+    if(isObject(delObj) === false){
+        throw new Error("要刪除的物件不是object，也可能是undefined或null");
+    }
+    let delObjOrder = parseInt(delObj[orderPropName], 10);
+    let parentObj = getDataByPath(parentRef);
+    if(isObject(parentObj)=== false){
+        throw new Error("parentRef不是指向object，也可能是undefined或null")
+    }
+    let objKeys = orderObjectKeysByProp(parentObj, orderPropName);
+    let updateList = [];
+    
+    for(let i = 0; i < objKeys.length; i++){
+        let objKey = objKeys[i];
+        let objOrder = parseInt(parentObj[objKey][orderPropName], 10);
+        if(objOrder > delObjOrder && objOrder !== i){
+            let updateValues = {[orderPropName]: i};
+            let updateObj = updateObjMaker(objKey, parentRef, updateValues);
+            updateList.push(updateObj);
+        }
+    }
+    let promises = [];
+    promises = promises.concat(updateList.map(item =>{
+        return update(ref(db, item.refPath), item.updateList);
+    }))
+    promises.push(remove(getRef(parentRef, key)));
+    try{
+        await Promise.all(promises);
+    }catch(error){
+        console.error(error);
+    }
+}
+
+function getRef(parentRef, key){
+    if(parentRef === undefined){
+        throw new Error('未傳入parentRef');
+    }
+    if(typeof parentRef !== 'string'){
+        throw new Error('parentRef不是string');
+    }
+    let refPath = refProj + '/' + parentRef;
+    if(key !== undefined && typeof key === 'string'){
+        refPath += '/' + key;
+    }
+    return ref(db, refPath);
+}
+
+function orderObjectKeysByProp(parentObj, propName){
+    let objKeys = Object.keys(parentObj);
+    objKeys.sort((a, b)=>{
+        let aOrder = parseInt(parentObj[a][propName], 10);
+        let bOrder = parseInt(parentObj[b][propName], 10);
+        return aOrder - bOrder;
+    });
+    return objKeys;
+}
+
+async function reorderDatas(parentPath, orderPropName){
     let parentObj = getDataByPath(parentPath);
-    if(isObject(parentObj) == false) {
+    if(isObject(parentObj) === false) {
         return;
     }
     let objArray = [];
@@ -888,12 +951,18 @@ function reorderDatas(parentPath, orderPropName){
     for(let i = 0; i < objArray.length; i++){
         let nowObj = objArray[i];
         let expectedOrder = i+1;
-        if(nowObj['updateList'][orderPropName] != expectedOrder){
+        if(nowObj['updateList'][orderPropName] !== expectedOrder){
             nowObj['updateList'][orderPropName] = expectedOrder;
             modifyList.push(nowObj);
         }        
     }
-    batchUpdateDatabase(modifyList);
+    let promises = await batchUpdateDatabase(modifyList);
+
+    try{
+        await Promise.all(promises);
+    }catch(error){
+        console.error(error);
+    }
 }
 
 function isObject(target){
