@@ -21,6 +21,7 @@ var currentSubject = "dramas";
 const subjectTypes = ["drama", "character", "key"];
 const dialogTypes = ["talk", "label", "keyJump"];
 const languages = ["JP", "EN", "TW", "KR"];
+var nowDramaLanguages = [];
 var currentDramaKey = null;
 
 var emptyDrama = {
@@ -265,6 +266,9 @@ async function showDramaContents(pagingDiv){
     let languageDiv = DOMmaker('div', 'rowParent', 'languageDiv');
     let mainLanguage = $('<div>').text('Main Language:').addClass('left');
     let mainLanguageSelect = makeDropdownWithStringArray(languages).addClass('left');
+    if(typeof nowDramaLanguages[0] === 'string'){
+        mainLanguageSelect.val(nowDramaLanguages[0]);
+    }
     mainLanguageSelect.attr('id', 'mainLanguageSelect');
     mainLanguageSelect.change(()=>{
         let all = $('.dialogTalkDivAll');
@@ -272,6 +276,7 @@ async function showDramaContents(pagingDiv){
         let mainLang = $('#mainLanguageSelect').val();
         DisplayTalk(left, mainLang);
         DisplayTalk(all, mainLang);
+        nowDramaLanguages[0] = mainLang;
     });
     let showSubLanguage = $('<div>').text('Show Sub Language').addClass('left').addClass('marginLeft');
     let showSubLanguageCheckBox = $('<input>').attr('id', 'showSubLanguageCheckBox').addClass('left');
@@ -301,10 +306,14 @@ async function showDramaContents(pagingDiv){
     let subLanguage = $('<div>').text('Sub Language:').addClass('left').addClass('marginLeft');
     let subLanguageSelect = makeDropdownWithStringArray(languages).addClass('left');
     subLanguageSelect.attr('id', 'subLanguageSelect');
+    if(typeof nowDramaLanguages[1] === 'string'){
+        subLanguageSelect.val(nowDramaLanguages[1]);
+    }
     subLanguageSelect.change(()=>{
         let right = $('.dialogTalkDivRight');
         let subLang = $('#subLanguageSelect').val();
         DisplayTalk(right, subLang);
+        nowDramaLanguages[1] = subLang;
     });
     languageDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
 
@@ -332,7 +341,7 @@ async function showDramaContents(pagingDiv){
     addDialogBtn.text('add dialog');
     addDialogBtn.click(()=> {
         // reorderDatas('dramas', 'dramaOrder');
-        // addNewDialog(newDialogType.val());
+        addNewDialog(newDialogType.val());
     });
     // addDialogDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
     dialogTitle.append([dialogTitleTxt, dialogTitleSpace, newDialogType, addDialogBtn]);
@@ -384,7 +393,8 @@ function DisplayTalk(jQueryDiv, language){
 function DisplayDialogs(dialogDivContainer) {
     let dialogs = project.dramas[currentDramaKey].dialogs;
     // console.log(JSON.stringify(dialogs));
-    let mainLang = $('#mainLanguageSelect').val();
+    // let mainLang = $('#mainLanguageSelect').val();
+    let mainLang = nowDramaLanguages[0];
     if(CheckObject(dialogs) == false){
         dialogDivContainer.text('There is no dialog');
         return;
@@ -484,8 +494,8 @@ async function addNewDialog(dialogType){
             languages.forEach(language =>{
                 let displayNameProp = 'displayName' + language;
                 let speechProp = 'speech' + language;
-                dialogToAdd[displayNameProp] = 'KR';
-                dialogToAdd[speechProp] = 'KR';
+                dialogToAdd[displayNameProp] = 'DisplayName '+language;
+                dialogToAdd[speechProp] = 'Speech '+language;
             })
             break;
         case "label":
