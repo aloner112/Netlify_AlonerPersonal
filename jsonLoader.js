@@ -13,7 +13,7 @@ auth.onAuthStateChanged(()=>{
 
 const db = getDatabase();
 const refProj = "projects/testProject01";
-const refDramas = "projects/testProject01/dramas";
+const refDramas = "dramas";
 const dbRef = ref(db, refProj);
 var project = [];
 // var dramas = [];
@@ -54,79 +54,6 @@ var emptyKeyJumpCondition ={
     order: "",
     keys: [""],
     targetLabel: ""
-}
-
-var testJson2 = {
-    projects:{
-        projectKey1:{
-            type: "project",
-            projectName: "projectA",
-            dramas:{
-                dramaKey01:{
-                    type: "drama",
-                    dramaOrder: "01",
-                    dramaName: "dramaNameA",
-                    dateInStory: "2020-01-02",
-                    dialogues:{
-                        dialogueKey01:{
-                            dialogueOrder: "01", 
-                            type: "label",
-                            labelName: "Label01"
-                        },
-                        dialogueKey02:{
-                            dialogueOrder: "02", 
-                            type: "talk",
-                            speaker: "Aloner",
-                            emotion: "Angry",
-                            speech: "Hello, is this Shishiro?"
-                        },
-                        dialogueKey03:{
-                            dialogueOrder: "03", 
-                            type: "talk",
-                            speaker: "Hsuante",
-                            emotion: "Smile",
-                            speech: "No, this is Mr. H."
-                        },
-                        dialogueKey04:{
-                            dialogueOrder: "04", 
-                            type: "endDrama",
-                        }
-                    }
-                }
-            }
-
-        },
-        projectKey2:{
-            
-        },
-        projectKey3:{
-            
-        }
-    }
-}
-
-var testJson = {
-    page1:{
-        name: "drama1",
-        type: "drama",
-        time: "2019-01-01",
-        content: "Aloner: Hi.\n\
-        Hsuante: Hello."
-    },
-    page2:{
-        name: "drama2",
-        type: "drama",
-        time: "2019-03-21",
-        content: "Aloner: Fuck.\n\
-        Hsuante: Damn."
-    },
-    page3:{
-        name: "drama3",
-        type: "drama",
-        time: "2021-03-03",
-        content: "135plus: Miku.\n\
-        LittleP: Maki."
-    }
 }
 
 var dramaKeys = [];
@@ -587,9 +514,8 @@ async function addNewDialog(dialogType){
     dialogToAdd.order = order;
     
     let dialogsPath = refDramas + "/" + currentDramaKey + "/dialogs"
-    let pushDialog = push(ref(db, dialogsPath));
+    let pushDialog = push(getRef(dialogsPath));
     set(pushDialog, dialogToAdd);
-    // console.log(dialogsLength);
 }
 
 function CheckObject(obj){
@@ -763,7 +689,7 @@ async function ChangeDramaOrder(previousValue){
         updateList.push(self);
     }
     let promises = updateList.map((item)=>{
-        let itemRef = ref(db, refDramas + '/' + item.key);
+        let itemRef = getRef(refDramas, item.key);
         return runTransaction(itemRef, (currentData) =>{
             if(currentData){
                 currentData.dramaOrder = item.order;
@@ -792,13 +718,13 @@ function EditDateInStory(){
     let date = $('#dateEdit').val();
     let newDate = $('#dateEdit').val() + " " + $('#timeEdit').val();
     let key = $('#dramaContent').attr('data-key');
-    update(ref(db, refDramas + '/' + key), {dateInStory: newDate});
+    update(getRef(refDramas, key), {dateInStory: newDate});
 }
 
 function EditDramaName(){
     let newName = $('#dramaNameEdit').val();
     let key = $('#dramaContent').attr('data-key');
-    update(ref(db, refDramas + '/' + key), {dramaName: newName});
+    update(getRef(refDramas, key), {dramaName: newName});
 }
 
 function addNewDramaPagingButton(){
@@ -809,17 +735,16 @@ function addNewDramaPagingButton(){
 }
 
 async function addNewDrama(){
-    let pushRef = push(ref(db, refDramas));
+    let pushRef = push(getRef(refDramas));
     let newDrama = await generateEmptyDrama(db, refDramas);
     await set(pushRef, newDrama);
     let snapshot = await get(pushRef);
     currentDramaKey = snapshot.key;
-    // let showPageDiv = $('.paging[data-key="' + currentDramaKey +'"]');
-    // pagingClickHandler(showPageDiv);
 }
 
 async function generateEmptyDrama(db, path) {
-    let snapshot = await get(ref(db, path), {
+    // let snapshot = await get(ref(db, path), {
+    let snapshot = await get(getRef(path), {
       orderByChild: 'type',
       equalTo: 'drama'
     });
@@ -868,7 +793,7 @@ async function deleteDrama(key){
     if(closestDiv != null) {
         currentDramaKey = $(closestDiv).attr('data-key');
     }
-    await remove(ref(db, refDramas + "/" + key));
+    await remove(getRef(refDramas, key));
     await reorderDatas('dramas', 'dramaOrder');
 }
 
