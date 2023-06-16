@@ -268,6 +268,9 @@ async function showDramaContents(pagingDiv){
     let mainLanguageSelect = makeDropdownWithStringArray(languages).addClass('left');
     if(typeof nowDramaLanguages[0] === 'string'){
         mainLanguageSelect.val(nowDramaLanguages[0]);
+    }else{
+        nowDramaLanguages[0] = languages[0];
+        mainLanguageSelect.val(languages[0]);
     }
     mainLanguageSelect.attr('id', 'mainLanguageSelect');
     mainLanguageSelect.change(()=>{
@@ -308,6 +311,9 @@ async function showDramaContents(pagingDiv){
     subLanguageSelect.attr('id', 'subLanguageSelect');
     if(typeof nowDramaLanguages[1] === 'string'){
         subLanguageSelect.val(nowDramaLanguages[1]);
+    }else{
+        nowDramaLanguages[1] = languages[1];
+        subLanguageSelect.val(languages[1]);
     }
     subLanguageSelect.change(()=>{
         let right = $('.dialogTalkDivRight');
@@ -341,7 +347,9 @@ async function showDramaContents(pagingDiv){
     addDialogBtn.text('add dialog');
     addDialogBtn.click(()=> {
         // reorderDatas('dramas', 'dramaOrder');
-        addNewDialog(newDialogType.val());
+        let newDialog = generateNewDialog(newDialogType.val());
+        // console.log(JSON.stringify(newDialog));
+        addDataWithOrder(newDialog, refDramas + '/' + key + '/dialogs', 'order');
     });
     // addDialogDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
     dialogTitle.append([dialogTitleTxt, dialogTitleSpace, newDialogType, addDialogBtn]);
@@ -375,7 +383,7 @@ function DisplayTalk(jQueryDiv, language){
     }
     else
     {
-        displayName += " tmpDisplayName" + language;
+        // displayName += " tmpDisplayName" + language;
     }
     let speech = talk['speech'+language];
     if(speech == undefined)
@@ -384,7 +392,7 @@ function DisplayTalk(jQueryDiv, language){
     }
     else
     {
-        speech += " tmpSpeech" + language;
+        // speech += " tmpSpeech" + language;
     }
     talkString = displayName+'<br>'+speech;
     jQueryDiv.html(talkString);
@@ -431,13 +439,13 @@ function DisplayDialogs(dialogDivContainer) {
         switch(dialogs[key].type){
             case 'talk':
                 let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
-                let speakerValue = dialogs[key].speaker == ""? 'no speaker': dialogs[key].speaker;
+                let speakerValue = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
                 let speaker = DOMmaker('div').text(speakerValue);
                 speakerDiv.append(speaker);
                 let talkDiv = DOMmaker('div', 'dialogTalkDiv').attr('key', key);
                 let talkDivAll = DOMmaker('div', 'dialogTalkDivAll').attr('key', key);
-                let displayName = dialogs[key]['displayName' + mainLang] + 'tmpDisplayName' + mainLang;
-                let speech = dialogs[key]['speech' + mainLang] + 'tmpSpeech' + mainLang;
+                let displayName = dialogs[key]['displayName' + mainLang];
+                let speech = dialogs[key]['speech' + mainLang];
                 let txt = displayName + '<br>' + speech;
                 talkDivAll.html(txt);
                 let talkDivLeft = DOMmaker('div', 'dialogTalkDivLeft').attr('key', key);
@@ -486,7 +494,7 @@ function DisplayDialogs(dialogDivContainer) {
 }
 
 
-async function addNewDialog(dialogType){
+function generateNewDialog(dialogType){
     let dialogToAdd; 
     switch (dialogType) {
         case "talk":
@@ -511,21 +519,22 @@ async function addNewDialog(dialogType){
             return;
             break;
     }
-    let order = 1;
-    let dialogs = project.dramas[currentDramaKey].dialogs;
-    if(CheckObject(dialogs) == false){}
-    else{
-        for (let dialogKey in dialogs){
-            let dialogOrder = parseInt((dialogs[dialogKey].order), 10); 
-            if(dialogOrder >= order)
-                order = dialogOrder + 1;
-        }
-    }
-    dialogToAdd.order = order;
-    
-    let dialogsPath = refDramas + "/" + currentDramaKey + "/dialogs"
-    let pushDialog = push(getRef(dialogsPath));
-    set(pushDialog, dialogToAdd);
+    return dialogToAdd;
+    // let order = 1;
+    // let dialogs = project.dramas[currentDramaKey].dialogs;
+    // if(CheckObject(dialogs) == false){}
+    // else{
+    //     for (let dialogKey in dialogs){
+    //         let dialogOrder = parseInt((dialogs[dialogKey].order), 10); 
+    //         if(dialogOrder >= order)
+    //             order = dialogOrder + 1;
+    //     }
+    // }
+    // dialogToAdd.order = order;
+    //
+    // let dialogsPath = refDramas + "/" + currentDramaKey + "/dialogs"
+    // let pushDialog = push(getRef(dialogsPath));
+    // set(pushDialog, dialogToAdd);
 }
 
 function CheckObject(obj){
@@ -805,6 +814,47 @@ async function deleteDrama(key){
     }
     await remove(getRef(refDramas, key));
     await reorderDatas('dramas', 'dramaOrder');
+}
+
+async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
+    let parentObj = getDataByPath(parentRef);
+    if(isObject(parentObj)=== false){
+        throw new Error("parentRef不是指向object，也可能是undefined或null")
+    }
+    let objKeys = orderObjectKeysByProp(parentObj, orderPropName);
+    let lastKey = objKeys[objKeys.length - 1];
+    let lastOrder = parseInt(parentObj[lastKey][orderPropName], 10);
+    if(targetOrder === undefined){
+        targetOrder = lastOrder + 1;
+        console.log('沒有指定目標order，將目標order設為目前最大order+1')
+    }else if(targetOrder > lastOrder + 1){
+        targetOrder = lastOrder + 1;
+        console.log('目標order大於目前最大order+1，將目標order設為目前最大order+1')
+    }
+    obj[orderPropName] = targetOrder;
+    // console.log(JSON.stringify(obj));
+    let updateList = [];
+    for(let i = 0; i < objKeys.length; i++){
+        let objKey = objKeys[i];
+        let objOrder = parseInt(parentObj[objKey][orderPropName], 10);
+        if(objOrder >= targetOrder){
+            let updateValues = {[orderPropName]: objOrder + 1};
+            let updateObj = updateObjMaker(objKey, parentRef, updateValues);
+            updateList.push(updateObj);
+        }
+    }
+    let promises = [];
+    if(updateList.length !== 0){
+        promises = promises.concat(updateList.map(item=>{
+            return update(ref(db, item.refPath), item.updateList);
+        })        );
+    }
+    promises.push(set(push(getRef(parentRef)), obj));
+    try{
+        await Promise.all(promises);
+    }catch(error){
+        console.error(error);
+    }
 }
 
 async function deleteDataWithOrder(key, orderPropName, parentRef){
