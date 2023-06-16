@@ -478,6 +478,11 @@ function DisplayDialogs(dialogDivContainer) {
         addDialogBelowBtn.attr('key', key);
         addDialogBelowBtn.attr('order', dialogs[key].order);
         addDialogBelowBtn.text('▼ Add Dialog');
+        addDialogBelowBtn.click(()=>{
+           let newDialog = generateNewDialog(addDialogBelowSelect.val());
+            addDataWithOrder(newDialog, refDramas + '/' + currentDramaKey + '/dialogs',
+                'order', dialogs[key].order + 1);
+        });
         // let delDialogDiv = DOMmaker('div', 'delDialogDiv');
         // delDialogDiv.append(delDialogBtn);
         
