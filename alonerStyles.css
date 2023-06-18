@@ -105,9 +105,34 @@ body{
     /*background-color: #eab0dc;*/
 }
 .dialogSpeakerDiv{
-    padding-left: 5px;
+    /*padding-left: 5px;*/
     width: 200px;
     background-color: #eab0dc;
+}
+.dialogSpeakerString{
+    display: flex;
+    margin: 5px;
+    align-items: center;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+}
+.dialogSpeakerInput{
+    display: none;
+}
+.dialogSpeakerString.editing{
+    display: block;
+    align-items: end;
+    margin-left: 7px;
+    margin-bottom: 0px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+}
+.dialogSpeakerInput.editing{
+    display: flex;
+    margin-top: 0px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    width: calc(100% - 20px);
 }
 .dialogTalkDiv{
     flex-grow: 1;
@@ -117,36 +142,86 @@ body{
 
 .dialogTalkDivAll{
     width: 100%;
-    padding-left: 5px;
     background-color: rgb(250, 230, 250);
 }
 .dialogTalkDivAll.hide{
     display: none;
     width: 100%;
-    padding-left: 5px;
     background-color: rgb(250, 230, 250);
 }
 .dialogTalkDivLeft{
     width: 50%;
-    padding-left: 5px;
     background-color: rgb(250, 180, 250);
 }
 .dialogTalkDivLeft.hide{
     display: none;
     width: 50%;
-    padding-left: 5px;
     background-color: rgb(250, 180, 250);
 }
 .dialogTalkDivRight{
     width: 50%;
-    padding-left: 5px;
     background-color: rgb(180, 250, 250);
 }
 .dialogTalkDivRight.hide{
     display: none;
     width: 50%;
-    padding-left: 5px;
     background-color: rgb(180, 250, 250);
+}
+.dialogDisplayNameDiv{
+    display: block;
+}
+.dialogDisplayNameString{
+    display: flex;
+    margin: 5px;
+    align-items: center;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+}
+.dialogDisplayNameString.editing{
+    display: block;
+    align-items: end;
+    margin-left: 7px;
+    margin-bottom: 0px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+}
+.dialogDisplayNameInput{
+    display: none;
+}
+.dialogDisplayNameInput.editing{
+    display: flex;
+    margin-top: 0px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    width: calc(100% - 20px);
+}
+.dialogSpeechDiv{
+    display: block;
+}
+.dialogSpeechString{
+    display: block;
+    margin: 5px;
+    align-items: center;    
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+}
+.dialogSpeechString.editing{
+    display: flex;
+    align-items: end;
+    margin-left: 7px;
+    margin-bottom: 0px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+}
+.dialogSpeechInput{
+    display: none;
+}
+.dialogSpeechInput.editing{
+    display: flex;
+    margin-top: 0px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    width: calc(100% - 20px);
 }
 .dialogOrderTxt{
     text-align: center;
@@ -154,6 +229,50 @@ body{
 .dialogOrderButton{
     width: 100%;
     display: block;
+}
+
+.dialogEditDiv{
+    display: grid;
+    margin: 5px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 5fr 1fr 5fr;
+    grid-gap: 4px;
+    align-items: center;
+}
+
+.delDialogButton{
+    display: none;
+}
+.editDialogButton{
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+}
+.submitDialogButton{
+    display: none;
+}
+.addDialogBelowSelect{
+    display: grid;
+    grid-column: 1;
+    grid-row: 3;
+}
+.addDialogBelowBtn{
+    display: grid;
+    grid-column: 2;
+    grid-row: 3;
+}
+.delDialogButton.editing{
+    display: grid;
+    grid-column: 2;
+    grid-row: 1;
+}
+.editDialogButton.editing{
+    display: none;
+}
+.submitDialogButton.editing{
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
 }
 
 .sidebar {

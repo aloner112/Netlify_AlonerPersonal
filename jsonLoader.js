@@ -384,6 +384,10 @@ function DisplayTalk(jQueryDiv, language){
     else
     {
         // displayName += " tmpDisplayName" + language;
+        let displayNameString = jQueryDiv.find('.dialogDisplayNameString');
+        $(displayNameString).text(displayName + ' : ');
+        let displayNameInput = jQueryDiv.find('.dialogDisplayNameInput');
+        $(displayNameInput).val(displayName);        
     }
     let speech = talk['speech'+language];
     if(speech == undefined)
@@ -393,9 +397,13 @@ function DisplayTalk(jQueryDiv, language){
     else
     {
         // speech += " tmpSpeech" + language;
+        let speechString = jQueryDiv.find('.dialogSpeechString');
+        $(speechString).text(speech);
+        let speechInput = jQueryDiv.find('.dialogSpeechInput');
+        $(speechInput).val(speech);
     }
-    talkString = displayName+'<br>'+speech;
-    jQueryDiv.html(talkString);
+    // talkString = displayName+'<br>'+speech;
+    // jQueryDiv.html(talkString);
 }
 
 function DisplayDialogs(dialogDivContainer) {
@@ -403,6 +411,7 @@ function DisplayDialogs(dialogDivContainer) {
     // console.log(JSON.stringify(dialogs));
     // let mainLang = $('#mainLanguageSelect').val();
     let mainLang = nowDramaLanguages[0];
+    let subLang = nowDramaLanguages[1];
     if(CheckObject(dialogs) == false){
         dialogDivContainer.text('There is no dialog');
         return;
@@ -439,20 +448,77 @@ function DisplayDialogs(dialogDivContainer) {
         switch(dialogs[key].type){
             case 'talk':
                 let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
+                
                 let speakerValue = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
-                let speaker = DOMmaker('div').text(speakerValue);
-                speakerDiv.append(speaker);
+                let speakerString = DOMmaker('div', 'dialogSpeakerString').attr('key', key)
+                speakerString.text(speakerValue);
+                let speakerInput = DOMmaker('input', 'dialogSpeakerInput').attr('key', key);
+                speakerInput.attr({type: 'string', value: speakerValue});
+                speakerDiv.append([speakerString, speakerInput]);
+                
+                let displayNameMain = dialogs[key]['displayName' + mainLang];
+                let displayNameSub = dialogs[key]['displayName' + subLang];
+                let speechMain = dialogs[key]['speech' + mainLang];
+                let speechSub = dialogs[key]['speech' + subLang];
+                let txt = displayNameMain + '<br>' + speechMain;
+
+                function generateTalkDiv(parentDiv, language){
+                    let displayName = dialogs[key]['displayName' + language];
+                    let speech = dialogs[key]['speech' + language];
+                    let displayNameDiv = DOMmaker('div', 'dialogDisplayNameDiv').attr('key', key);
+                    let displayNameString = DOMmaker('div', 'dialogDisplayNameString').attr('key', key);
+                    let displayNameInput = DOMmaker('input', 'dialogDisplayNameInput').attr('key', key);
+                    displayNameInput.attr({type: 'string', value: displayName});
+                    displayNameString.text(displayName + ' : ');
+                    displayNameDiv.append([displayNameString, displayNameInput]);
+                    let speechDiv = DOMmaker('div', 'dialogSpeechDiv').attr('key', key);
+                    let speechString = DOMmaker('div', 'dialogSpeechString').attr('key', key);
+                    speechString.text(speech);
+                    let speechInput = DOMmaker('input', 'dialogSpeechInput').attr('key', key);
+                    speechInput.attr({type: 'string', value: speech});
+                    speechDiv.append([speechString, speechInput]);
+                    parentDiv.append([displayNameDiv, speechDiv]);
+                }
+
                 let talkDiv = DOMmaker('div', 'dialogTalkDiv').attr('key', key);
                 let talkDivAll = DOMmaker('div', 'dialogTalkDivAll').attr('key', key);
-                let displayName = dialogs[key]['displayName' + mainLang];
-                let speech = dialogs[key]['speech' + mainLang];
-                let txt = displayName + '<br>' + speech;
-                talkDivAll.html(txt);
+                generateTalkDiv(talkDivAll, mainLang);
+                // let dialogDisplayNameDivAll = DOMmaker('div', 'dialogDisplayNameDivAll').attr('key', key);
+                // let dialogDisplayNameInputAll = DOMmaker('input', 'dialogDisplayNameInputAll').attr('key', key);
+                // dialogDisplayNameInputAll.attr({type: 'string', value: displayNameMain});
+                // dialogDisplayNameDivAll.text(displayNameMain);
+                // dialogDisplayNameDivAll.append(dialogDisplayNameInputAll);
+                // let dialogSpeechDivAll = DOMmaker('div', 'dialogSpeechDivAll').attr('key', key);
+                // dialogSpeechDivAll.text(speechMain);
+                // let dialogSpeechInputAll = DOMmaker('input', 'dialogSpeechInputAll').attr('key', key);
+                // dialogSpeechInputAll.attr({type: 'string', value: speechMain});
+                // dialogSpeechDivAll.append(dialogSpeechInputAll);
+                // talkDivAll.append([dialogDisplayNameDivAll, dialogSpeechDivAll]);
+                
+                
                 let talkDivLeft = DOMmaker('div', 'dialogTalkDivLeft').attr('key', key);
                 talkDivLeft.addClass('hide');
+                generateTalkDiv(talkDivLeft, mainLang);
+                // let dialogDisplayNameDivLeft = DOMmaker('div', 'dialogDisplayNameDivLeft').attr('key', key);
+                // let dialogDisplayNameInputLeft = DOMmaker('input', 'dialogDisplayNameInputLeft').attr('key', key);
+                // dialogDisplayNameInputLeft.attr({type: 'string', value: displayNameMain});
+                // dialogDisplayNameDivLeft.text(displayNameMain);
+                // dialogDisplayNameDivLeft.append(dialogDisplayNameInputLeft);
+                // let dialogSpeechDivLeft = DOMmaker('div', 'dialogSpeechDivLeft').attr('key', key);
+                // let dialogSpeechInputLeft = DOMmaker('input', 'dialogSpeechInputLeft').attr('key', key);
+                
                 let talkDivRight = DOMmaker('div', 'dialogTalkDivRight').attr('key', key);
                 talkDivRight.addClass('hide');
-                talkDiv.append(talkDivAll, talkDivLeft, talkDivRight);
+                generateTalkDiv(talkDivRight, subLang);
+                // let dialogDisplayNameDivRight = DOMmaker('div', 'dialogDisplayNameDivRight').attr('key', key);
+                // let dialogDisplayNameInputRight = DOMmaker('input', 'dialogDisplayNameInputRight').attr('key', key);
+                // dialogDisplayNameInputRight.attr({type: 'string', value: displayNameSub});
+                // dialogDisplayNameDivRight.text(displayNameSub);
+                // dialogDisplayNameDivRight.append(dialogDisplayNameInputRight);
+                // let dialogSpeechDivRight = DOMmaker('div', 'dialogSpeechDivRight').attr('key', key);
+                // let dialogSpeechInputRight = DOMmaker('input', 'dialogSpeechInputRight').attr('key', key);
+                // talkDivAll.html(txt);
+                talkDiv.append([talkDivAll, talkDivLeft, talkDivRight]);
                 dialogDiv.append([speakerDiv, talkDiv]);
                 break;
             case 'label':
@@ -463,7 +529,65 @@ function DisplayDialogs(dialogDivContainer) {
             default:
                 return;
         }
+        
+        let EditingElements = [`.editDialogButton[key=${key}]`,
+            `.submitDialogButton[key=${key}]`,
+            `.delDialogButton[key=${key}]`,
+            `.dialogDisplayNameString[key=${key}]`,
+            `.dialogDisplayNameInput[key=${key}]`,
+            `.dialogSpeechString[key=${key}]`,
+            `.dialogSpeechInput[key=${key}]`,
+            `.dialogSpeakerString[key=${key}]`,
+            `.dialogSpeakerInput[key=${key}]`];
+        
         let editDiv = DOMmaker('div', 'dialogEditDiv');
+        let editDialogBtn = DOMmaker('button', 'editDialogButton');
+        editDialogBtn.attr('key', key);
+        editDialogBtn.attr('order', dialogs[key].order);
+        editDialogBtn.text('Edit');
+        editDialogBtn.click(()=>{
+            // let addEditingElements = [];
+            // addEditingElements.push($(`.editDialogButton[key=${key}]`));
+            // addEditingElements.push($(`.submitDialogButton[key=${key}]`));
+            // addEditingElements.push($(`.delDialogButton[key=${key}]`));
+            // addEditingElements.push($(`.dialogDisplayNameString[key=${key}]`));
+            // addEditingElements.push($(`.dialogDisplayNameInput[key=${key}]`));
+            // addEditingElements.push($(`.dialogSpeechString[key=${key}]`));
+            // addEditingElements.push($(`.dialogSpeechInput[key=${key}]`));
+            // addEditingElements.push($(`.dialogSpeakerString[key=${key}]`));
+            // addEditingElements.push($(`.dialogSpeakerInput[key=${key}]`));
+            // addEditingElements.forEach(element =>{
+            //     element.addClass('editing');
+            // });
+            // let speakerVal = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker + ' : ';
+            let speakerVal = 'Character :';
+            $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
+            EditingElements.forEach(element =>{
+                $(element).addClass('editing');
+            })
+        });
+        let submitDialogBtn = DOMmaker('button', 'submitDialogButton');
+        submitDialogBtn.attr('key', key);
+        submitDialogBtn.attr('order', dialogs[key].order);
+        submitDialogBtn.text('Submit');
+        submitDialogBtn.click(()=>{
+            // let removeEditingElements = [];
+            // removeEditingElements.push($(`.editDialogButton[key=${key}]`));
+            // removeEditingElements.push($(`.submitDialogButton[key=${key}]`));
+            // removeEditingElements.push($(`.delDialogButton[key=${key}]`));
+            // removeEditingElements.push($(`.dialogDisplayNameString[key=${key}]`));
+            // removeEditingElements.push($(`.dialogDisplayNameInput[key=${key}]`));
+            // removeEditingElements.push($(`.dialogSpeechString[key=${key}]`));
+            // removeEditingElements.push($(`.dialogSpeechInput[key=${key}]`));
+            // removeEditingElements.forEach(element =>{
+            //     element.removeClass('editing');
+            // });
+            let speakerVal = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
+            $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
+            EditingElements.forEach(element =>{
+                $(element).removeClass('editing');
+            })
+        });
         let delDialogBtn = DOMmaker('button', 'delDialogButton');
         delDialogBtn.attr('key', key);
         delDialogBtn.attr('order', dialogs[key].order);
@@ -486,7 +610,7 @@ function DisplayDialogs(dialogDivContainer) {
         // let delDialogDiv = DOMmaker('div', 'delDialogDiv');
         // delDialogDiv.append(delDialogBtn);
         
-        editDiv.append([delDialogBtn, '<hr>', addDialogBelowSelect,'<br>', addDialogBelowBtn]);
+        editDiv.append([editDialogBtn, submitDialogBtn, delDialogBtn, addDialogBelowSelect, addDialogBelowBtn]);
 
         dialogDiv.append([editDiv]);
         dialogDivContainer.append(dialogDiv);
