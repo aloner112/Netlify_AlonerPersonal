@@ -125,6 +125,7 @@ body{
     margin-left: 7px;
     margin-bottom: 0px;
     font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
     font-size: 8px;
 }
 .dialogSpeakerInput.editing{
@@ -133,6 +134,8 @@ body{
     margin-left: 5px;
     margin-bottom: 5px;
     width: calc(100% - 20px);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
 }
 .dialogTalkDiv{
     flex-grow: 1;
@@ -183,6 +186,7 @@ body{
     margin-left: 7px;
     margin-bottom: 0px;
     font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
     font-size: 8px;
 }
 .dialogDisplayNameInput{
@@ -194,6 +198,8 @@ body{
     margin-left: 5px;
     margin-bottom: 5px;
     width: calc(100% - 20px);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
 }
 .dialogSpeechDiv{
     display: block;
@@ -211,6 +217,7 @@ body{
     margin-left: 7px;
     margin-bottom: 0px;
     font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
     font-size: 8px;
 }
 .dialogSpeechInput{
@@ -222,6 +229,10 @@ body{
     margin-left: 5px;
     margin-bottom: 5px;
     width: calc(100% - 20px);
+    height: 80px;
+    resize: none;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
 }
 .dialogOrderTxt{
     text-align: center;
