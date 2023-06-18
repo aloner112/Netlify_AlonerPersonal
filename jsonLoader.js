@@ -364,7 +364,7 @@ async function showDramaContents(pagingDiv){
     dialogDivContainer.append([addDialogDiv]);
 
     //Show Dialogs
-    await DisplayDialogs(dialogDivContainer);
+    DisplayDialogs(dialogDivContainer);
     
     $('#dramaContent').append([dialogTitle, dialogDivContainer]);    
     DivsSameWidth([dramaNameData, dateInStoryData]);
@@ -671,8 +671,8 @@ async function DisplayDialogs(dialogDivContainer) {
         delDialogBtn.attr('key', key);
         delDialogBtn.attr('order', dialogs[key].order);
         delDialogBtn.text('Delete');
-        $(delDialogBtn).click(()=>{
-            deleteDataWithOrder(key, 'order', nowRefPath);
+        $(delDialogBtn).click(async function(){
+            await deleteDataWithOrder(key, 'order', nowRefPath);
         });
         let addDialogBelowSelect = makeDropdownWithStringArray(dialogTypes);
         addDialogBelowSelect.addClass('addDialogBelowSelect');
@@ -681,9 +681,9 @@ async function DisplayDialogs(dialogDivContainer) {
         addDialogBelowBtn.attr('key', key);
         addDialogBelowBtn.attr('order', dialogs[key].order);
         addDialogBelowBtn.text('▼ Add Dialog');
-        addDialogBelowBtn.click(()=>{
+        addDialogBelowBtn.click(async function(){
            let newDialog = generateNewDialog(addDialogBelowSelect.val());
-            addDataWithOrder(newDialog, refDramas + '/' + currentDramaKey + '/dialogs',
+            await addDataWithOrder(newDialog, refDramas + '/' + currentDramaKey + '/dialogs',
                 'order', dialogs[key].order + 1);
         });
         
