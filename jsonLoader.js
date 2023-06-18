@@ -59,8 +59,6 @@ var emptyKeyJumpCondition ={
 
 var dramaKeys = [];
 
-// $(document).ready(function () {});
-
 function GetData(){
     onValue(dbRef, (snapshot) =>{
         if(snapshot.exists()){
@@ -327,7 +325,6 @@ async function showDramaContents(pagingDiv){
     $('#dramaContent').attr('dramaOrder', data.dramaOrder);
     let delButton = $('<button>').text('Delete Drama').addClass('right');
     delButton.click(() => deleteDrama(key));
-    // dramaOrderRowLeft.append([dramaOrder, dramaOrderEdit])
     dramaOrderRow.append([dramaOrder, dramaOrderUpButton, dramaOrderDisplay, dramaOrderDownButton, delButton]);
     dramaNameRow.append([dramaName, dramaNameData, dramaNameEdit, dramaNameButton]);
     dateInStoryRow.append([dateInStory, dateInStoryData, dateEdit, timeEdit, dateEditButton]);
@@ -346,23 +343,16 @@ async function showDramaContents(pagingDiv){
     let addDialogBtn = DOMmaker('button', 'addDialogBtn', 'addDialogBtn');
     addDialogBtn.text('add dialog');
     addDialogBtn.click(()=> {
-        // reorderDatas('dramas', 'dramaOrder');
         let newDialog = generateNewDialog(newDialogType.val());
-        // console.log(JSON.stringify(newDialog));
         addDataWithOrder(newDialog, refDramas + '/' + key + '/dialogs', 'order');
     });
-    // addDialogDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
+    
     dialogTitle.append([dialogTitleTxt, dialogTitleSpace, newDialogType, addDialogBtn]);
     dialogDivContainer.append([addDialogDiv]);
 
     //Show Dialogs
     DisplayDialogs(dialogDivContainer);
-    // DisplayTalk($('.dialogTalkDivAll'), $('#mainLanguageSelect').val());
     
-    // let dialogues = "<div>" + data.dialogues.replace(/\n/g, '<br>') + "</div>";
-    // let content = dramaName + dateInStory;
-    // $('#dramaContent').html(content);
-    // $('#dramaContent').append(dramaOrder)
     $('#dramaContent').append([dialogTitle, dialogDivContainer]);    
     DivsSameWidth([dramaNameData, dateInStoryData]);
 }
@@ -383,7 +373,6 @@ function DisplayTalk(jQueryDiv, language){
     }
     else
     {
-        // displayName += " tmpDisplayName" + language;
         let displayNameString = jQueryDiv.find('.dialogDisplayNameString');
         $(displayNameString).text(displayName + ' : ');
         let displayNameInput = jQueryDiv.find('.dialogDisplayNameInput');
@@ -396,14 +385,11 @@ function DisplayTalk(jQueryDiv, language){
     }
     else
     {
-        // speech += " tmpSpeech" + language;
         let speechString = jQueryDiv.find('.dialogSpeechString');
         $(speechString).text(speech);
         let speechInput = jQueryDiv.find('.dialogSpeechInput');
         $(speechInput).val(speech);
     }
-    // talkString = displayName+'<br>'+speech;
-    // jQueryDiv.html(talkString);
 }
 
 function DisplayDialogs(dialogDivContainer) {
@@ -556,8 +542,6 @@ function DisplayDialogs(dialogDivContainer) {
             addDataWithOrder(newDialog, refDramas + '/' + currentDramaKey + '/dialogs',
                 'order', dialogs[key].order + 1);
         });
-        // let delDialogDiv = DOMmaker('div', 'delDialogDiv');
-        // delDialogDiv.append(delDialogBtn);
         
         editDiv.append([editDialogBtn, submitDialogBtn, delDialogBtn, addDialogBelowSelect, addDialogBelowBtn]);
 
@@ -598,21 +582,6 @@ function generateNewDialog(dialogType){
             break;
     }
     return dialogToAdd;
-    // let order = 1;
-    // let dialogs = project.dramas[currentDramaKey].dialogs;
-    // if(CheckObject(dialogs) == false){}
-    // else{
-    //     for (let dialogKey in dialogs){
-    //         let dialogOrder = parseInt((dialogs[dialogKey].order), 10); 
-    //         if(dialogOrder >= order)
-    //             order = dialogOrder + 1;
-    //     }
-    // }
-    // dialogToAdd.order = order;
-    //
-    // let dialogsPath = refDramas + "/" + currentDramaKey + "/dialogs"
-    // let pushDialog = push(getRef(dialogsPath));
-    // set(pushDialog, dialogToAdd);
 }
 
 function CheckObject(obj){
@@ -731,79 +700,6 @@ async function batchUpdateDatabase(updateObjs){
     return promises;
 }
 
-//指定數字來變更Drama Order的方法，有bug，暫不使用。
-async function ChangeDramaOrder(previousValue){
-    // console.log('previousValue: ' +previousValue + ', order: '+order);
-    previousValue = parseInt(previousValue, 10);
-    let order = parseInt($('#dramaOrderEdit').val(), 10);
-    let key = $('#dramaContent').attr('data-key');
-    // await UpdateDramas();
-    let orderAndKeys = [];
-    for(let dramaKey in dramas){
-        let dramaOrder = parseInt(dramas[dramaKey].dramaOrder, 10);
-        if(dramaKey == key) continue;
-        if(order < previousValue){
-            if(dramaOrder < order) continue;
-        }else{
-            if(dramaOrder < previousValue) continue;
-        }
-        let orderAndKey = {'key': dramaKey, 'order': dramaOrder};        
-        orderAndKeys.push(orderAndKey);
-    }
-    orderAndKeys.sort((a, b)=>{
-        let orderA = parseInt(a.order);
-        let orderB = parseInt(b.order);
-        return orderA - orderB;
-    });
-    // console.log('largestOrder:' +orderAndKeys[orderAndKeys.length -1].order);
-    orderAndKeys.reverse();
-    let largestOrder = parseInt(orderAndKeys[0].order, 10);
-    orderAndKeys.reverse();
-    let firstSelf = {'key': key, 'order': largestOrder + 1};
-    let self = {'key': key, 'order': order};
-    let updateList = [];
-    updateList.push(self);
-    if(order < previousValue){
-        for(let i=0; i<orderAndKeys.length; i++){
-            let item = orderAndKeys[i];
-            let itemOrder = parseInt(item.order, 10);
-            if(itemOrder != order + i) continue;
-            item.order += 1;
-            updateList.push(item);
-        }
-        updateList.push(firstSelf);
-        updateList.reverse();        
-    }else{
-        for(let i=0; i < orderAndKeys.length; i++){
-            let item = orderAndKeys[i];
-            let itemOrder = parseInt(item.order, 10);
-            if(itemOrder > previousValue + i && itemOrder <= order)
-            {
-                item.order = previousValue + i;
-                updateList.push(item);
-            }            
-        }
-        updateList.push(self);
-    }
-    let promises = updateList.map((item)=>{
-        let itemRef = getRef(refDramas, item.key);
-        return runTransaction(itemRef, (currentData) =>{
-            if(currentData){
-                currentData.dramaOrder = item.order;
-                return currentData;
-            }else{
-                return;
-            }
-        });
-    });
-
-    try{
-        await Promise.all(promises);
-    }catch(error){
-        console.error(error);
-    }
-}
-
 function DivsSameWidth(divs){
     let divWidths = [];
     divs.forEach(div => {divWidths.push(div.width())});
@@ -812,7 +708,6 @@ function DivsSameWidth(divs){
 }
 
 function EditDateInStory(){
-    let date = $('#dateEdit').val();
     let newDate = $('#dateEdit').val() + " " + $('#timeEdit').val();
     let key = $('#dramaContent').attr('data-key');
     update(getRef(refDramas, key), {dateInStory: newDate});
@@ -891,8 +786,7 @@ async function deleteDrama(key){
     if(closestDiv != null) {
         currentDramaKey = $(closestDiv).attr('data-key');
     }
-    await remove(getRef(refDramas, key));
-    await reorderDatas('dramas', 'dramaOrder');
+    await deleteDataWithOrder(key, 'dramaOrder', refDramas);
 }
 
 async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
@@ -992,41 +886,6 @@ function orderObjectKeysByProp(parentObj, propName){
         return aOrder - bOrder;
     });
     return objKeys;
-}
-
-async function reorderDatas(parentPath, orderPropName){
-    let parentObj = getDataByPath(parentPath);
-    if(isObject(parentObj) === false) {
-        return;
-    }
-    let objArray = [];
-    for(let key in parentObj){
-        let orderObj = {
-            [orderPropName]: parentObj[key][orderPropName]
-        };
-        let obj = {
-            refPath: refProj +'/'+ parentPath + '/' + key,
-            updateList: {orderObj}          
-        };
-        objArray.push(obj);
-    }
-    objArray.sort((a, b)=>a['updateList'][orderPropName] - b['updateList'][orderPropName]);
-    let modifyList = [];
-    for(let i = 0; i < objArray.length; i++){
-        let nowObj = objArray[i];
-        let expectedOrder = i+1;
-        if(nowObj['updateList'][orderPropName] !== expectedOrder){
-            nowObj['updateList'][orderPropName] = expectedOrder;
-            modifyList.push(nowObj);
-        }        
-    }
-    let promises = await batchUpdateDatabase(modifyList);
-
-    try{
-        await Promise.all(promises);
-    }catch(error){
-        console.error(error);
-    }
 }
 
 function isObject(target){
