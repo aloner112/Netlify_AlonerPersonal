@@ -275,8 +275,13 @@ async function showDramaContents(pagingDiv){
         let all = $('.dialogTalkDivAll');
         let left = $('.dialogTalkDivLeft');
         let mainLang = $('#mainLanguageSelect').val();
-        DisplayTalk(left, mainLang);
-        DisplayTalk(all, mainLang);
+
+        left.toArray().forEach(element=>{
+            DisplayTalk(element, mainLang); });
+        // DisplayTalk(left, mainLang);
+        all.toArray().forEach(element=>{
+            DisplayTalk(element, mainLang); });
+        // DisplayTalk(all, mainLang);
         nowDramaLanguages[0] = mainLang;
     });
     let showSubLanguage = $('<div>').text('Show Sub Language').addClass('left').addClass('marginLeft');
@@ -292,14 +297,20 @@ async function showDramaContents(pagingDiv){
         if(self.prop('checked')){
             //show
             left.removeClass('hide');
-            DisplayTalk(left, mainLang);
+            left.toArray().forEach(element=>{
+                DisplayTalk(element, mainLang); });
+            // DisplayTalk(left, mainLang);
             right.removeClass('hide');
-            DisplayTalk(right, subLang);
+            right.toArray().forEach(element=>{
+                DisplayTalk(element, subLang); });
+            // DisplayTalk(right, subLang);
             all.addClass('hide');
         }else{
             //hide
             all.removeClass('hide');
-            DisplayTalk(all, mainLang);
+            all.toArray().forEach(element=>{
+                DisplayTalk(element, subLang); });
+            // DisplayTalk(all, mainLang);
             left.addClass('hide');
             right.addClass('hide');
         }
@@ -316,7 +327,9 @@ async function showDramaContents(pagingDiv){
     subLanguageSelect.change(()=>{
         let right = $('.dialogTalkDivRight');
         let subLang = $('#subLanguageSelect').val();
-        DisplayTalk(right, subLang);
+        right.toArray().forEach(element=>{
+            DisplayTalk(element, subLang); });
+        // DisplayTalk(right, subLang);
         nowDramaLanguages[1] = subLang;
     });
     languageDiv.append([mainLanguage, mainLanguageSelect, showSubLanguage, showSubLanguageCheckBox, subLanguage, subLanguageSelect]);
@@ -351,13 +364,14 @@ async function showDramaContents(pagingDiv){
     dialogDivContainer.append([addDialogDiv]);
 
     //Show Dialogs
-    DisplayDialogs(dialogDivContainer);
+    await DisplayDialogs(dialogDivContainer);
     
     $('#dramaContent').append([dialogTitle, dialogDivContainer]);    
     DivsSameWidth([dramaNameData, dateInStoryData]);
 }
 
 function DisplayTalk(jQueryDiv, language){
+    jQueryDiv = $(jQueryDiv);
     let key = jQueryDiv.attr('key');
     let talk = project.dramas[currentDramaKey].dialogs[key];
     let talkString = '';
@@ -392,7 +406,7 @@ function DisplayTalk(jQueryDiv, language){
     }
 }
 
-function DisplayDialogs(dialogDivContainer) {
+async function DisplayDialogs(dialogDivContainer) {
     let dialogs = project.dramas[currentDramaKey].dialogs;
     
     let mainLang = nowDramaLanguages[0];
@@ -483,13 +497,20 @@ function DisplayDialogs(dialogDivContainer) {
         
         let EditingElements = [`.editDialogButton[key=${key}]`,
             `.submitDialogButton[key=${key}]`,
-            `.delDialogButton[key=${key}]`,
+            `.delDialogButton[key=${key}]`];
+            
+        
+        let EditingTalkElements = [
             `.dialogDisplayNameString[key=${key}]`,
             `.dialogDisplayNameInput[key=${key}]`,
             `.dialogSpeechString[key=${key}]`,
             `.dialogSpeechInput[key=${key}]`,
             `.dialogSpeakerString[key=${key}]`,
-            `.dialogSpeakerInput[key=${key}]`];
+            `.dialogSpeakerInput[key=${key}]`
+        ];
+
+        let EditContentElement = [`.dialogDisplayNameInput[key=${key}]`,
+            `.dialogSpeechInput[key=${key}]`, `.dialogSpeakerInput[key=${key}]`];
         
         let languageControl = ['#showSubLanguageCheckBox',
             '#subLanguageSelect', '#mainLanguageSelect'];
@@ -500,28 +521,151 @@ function DisplayDialogs(dialogDivContainer) {
         editDialogBtn.attr('order', dialogs[key].order);
         editDialogBtn.text('Edit');
         editDialogBtn.click(()=>{
-            let speakerVal = 'Character :';
-            $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
             EditingElements.forEach(element =>{
                 $(element).addClass('editing');
             });
-            languageControl.forEach(element=>{
-                $(element).prop('disabled', true);
-            });
+            switch(dialogs[key].type){
+                case 'talk':
+                    EditingTalkElements.forEach(element =>{
+                        $(element).addClass('editing');
+                    });
+                    languageControl.forEach(element=>{
+                        $(element).prop('disabled', true);
+                    });
+                    $(`.dialogSpeakerString[key=${key}]`).text('Character :');
+                    $(`.dialogDisplayNameString[key=${key}]`).text('DisplayName ' + mainLang + ' : ');
+                    $(`.dialogSpeechString[key=${key}]`).text('Speech ' + mainLang + ' : ');
+                    if($('#showSubLanguageCheckBox').prop('checked')){
+                        let mainLang = nowDramaLanguages[0];
+                        let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
+                        mainLangDiv.find(`.dialogDisplayNameInput[key=${key}]`)
+                            .val(dialogs[key][`displayName${mainLang}`]);
+                        mainLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
+                            .val(dialogs[key][`speech${mainLang}`]);
+                        let subLang = nowDramaLanguages[1];
+                        let subLangDiv = $(`.dialogTalkDivRight[key=${key}]`);
+                        subLangDiv.find(`.dialogDisplayNameInput[key="${key}"]`)
+                            .val(dialogs[key][`displayName${subLang}`]);
+                        subLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
+                            .val(dialogs[key][`speech${subLang}`]);
+                        
+                    }else{
+                        let mainLang = nowDramaLanguages[0];
+                        let mainLangDiv = $(`.dialogTalkDivAll[key='${key}']`);
+                        mainLangDiv.find(`.dialogDisplayNameInput[key=${key}]`)
+                            .val(dialogs[key][`displayName${mainLang}`]);
+                        mainLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
+                            .val(dialogs[key][`speech${mainLang}`]);
+                    }
+                    
+                    break;
+                case 'label':
+                    break;
+                case 'keyJump':
+                    break;
+                default:
+                    break;
+            }
         });
+        
         let submitDialogBtn = DOMmaker('button', 'submitDialogButton');
         submitDialogBtn.attr('key', key);
         submitDialogBtn.attr('order', dialogs[key].order);
         submitDialogBtn.text('Submit');
-        submitDialogBtn.click(()=>{
+        submitDialogBtn.click(async function(){
             let speakerVal = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
             $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             })
-            languageControl.forEach(element=>{
-                $(element).prop('disabled', false);
-            });
+            switch(dialogs[key].type){
+                case 'talk':
+                    languageControl.forEach(element=>{
+                        $(element).prop('disabled', false);
+                    });
+
+                    if($('#showSubLanguageCheckBox').prop('checked')){
+                        let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
+                        let mainLang = nowDramaLanguages[0];
+                        let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
+                        let mainLangDisplayName = mainLangDiv.find(
+                            `.dialogDisplayNameInput[key=${key}]`).val();
+                        let mainLangSpeech = mainLangDiv.find(
+                            `.dialogSpeechInput[key="${key}"]`).val();
+                        let subLang = nowDramaLanguages[1];
+                        let subLangDiv = $(`.dialogTalkDivRight[key=${key}]`);
+                        let subLangDisplayName = subLangDiv.find(
+                            `.dialogDisplayNameInput[key="${key}"]`).val();
+                        let subLangSpeech = subLangDiv.find(
+                            `.dialogSpeechInput[key="${key}"]`).val();
+                        let updateObj = {};
+                        let dataMainLangDisplayName = dialogs[key][`displayName${mainLang}`];
+                        let dataMainLangSpeech = dialogs[key][`speech${mainLang}`];
+                        let dataSubLangDisplayName = dialogs[key][`displayName${subLang}`];
+                        let dataSubLangSpeech = dialogs[key][`speech${subLang}`];
+                        if(speaker !== dialogs[key]['speaker']){
+                            updateObj['speaker']=  speaker; }
+                        if(mainLangDisplayName !== dataMainLangDisplayName){
+                            updateObj[`displayName${mainLang}`] = mainLangDisplayName;     }
+                        if(mainLangSpeech !== dataMainLangSpeech){
+                            updateObj[`speech${mainLang}`] = mainLangSpeech; }
+                        if(subLangDisplayName !== dataSubLangDisplayName){
+                            updateObj[`displayName${subLang}`] = subLangDisplayName; }
+                        if(subLangSpeech !== dataSubLangSpeech){
+                            updateObj[`speech${subLang}`] = subLangSpeech; }
+                        if(Object.keys(updateObj).length > 0){
+                            let updateList = [];
+                            updateList.push(updateObjMaker(key, nowRefPath, updateObj));
+                            let promises = await batchUpdateDatabase(updateList);
+                            try{
+                                await Promise.all(promises);
+                            }catch(error){
+                                console.error(error);
+                            }
+                        }
+                        DisplayTalk(mainLangDiv, mainLang);
+                        DisplayTalk(subLangDiv, subLang);
+                    }else{
+                        let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
+                        let mainLang = nowDramaLanguages[0];
+                        let mainLangDiv = $(`.dialogTalkDivAll[key='${key}']`);
+                        let mainLangDisplayName = mainLangDiv.find(
+                            `.dialogDisplayNameInput[key=${key}]`).val();
+                        let mainLangSpeech = mainLangDiv.find(
+                            `.dialogSpeechInput[key="${key}"]`).val();
+                        let updateObj = {};
+                        let dataMainLangDisplayName = dialogs[key][`displayName${mainLang}`];
+                        let dataMainLangSpeech = dialogs[key][`speech${mainLang}`];
+                        if(speaker !== dialogs[key]['speaker']){
+                            updateObj['speaker']=  speaker; }
+                        if(mainLangDisplayName !== dataMainLangDisplayName){
+                            updateObj[`displayName${mainLang}`] = mainLangDisplayName;     }
+                        if(mainLangSpeech !== dataMainLangSpeech){
+                            updateObj[`speech${mainLang}`] = mainLangSpeech; }
+                        if(Object.keys(updateObj).length > 0){
+                            let updateList = [];
+                            updateList.push(updateObjMaker(key, nowRefPath, updateObj));
+                            let promises = await batchUpdateDatabase(updateList);
+                            try{
+                                await Promise.all(promises);
+                            }catch(error){
+                                console.error(error);
+                            }
+                        }
+                        DisplayTalk(mainLangDiv, mainLang);
+                    }
+                    EditingTalkElements.forEach(element =>{
+                        $(element).removeClass('editing');
+                    });
+                    // updateObjMaker(key, )
+                    break;
+                case 'label':
+                    break;
+                case 'keyJump':
+                    break;
+                default:
+                    break;
+            }
         });
         let delDialogBtn = DOMmaker('button', 'delDialogButton');
         delDialogBtn.attr('key', key);
