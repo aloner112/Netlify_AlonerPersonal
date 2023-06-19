@@ -1072,37 +1072,40 @@ async function deleteDrama(key){
 }
 
 async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
-    let parentObj = getDataByPath(parentRef);
-    if(isObject(parentObj)=== false){
-        throw new Error("parentRef不是指向object，也可能是undefined或null")
-    }
-    let objKeys = orderObjectKeysByProp(parentObj, orderPropName);
-    let lastKey = objKeys[objKeys.length - 1];
-    let lastOrder = parseInt(parentObj[lastKey][orderPropName], 10);
-    if(targetOrder === undefined){
-        targetOrder = lastOrder + 1;
-        console.log('沒有指定目標order，將目標order設為目前最大order+1')
-    }else if(targetOrder > lastOrder + 1){
-        targetOrder = lastOrder + 1;
-        console.log('目標order大於目前最大order+1，將目標order設為目前最大order+1')
-    }
-    obj[orderPropName] = targetOrder;
-    // console.log(JSON.stringify(obj));
     let updateList = [];
-    for(let i = 0; i < objKeys.length; i++){
-        let objKey = objKeys[i];
-        let objOrder = parseInt(parentObj[objKey][orderPropName], 10);
-        if(objOrder >= targetOrder){
-            let updateValues = {[orderPropName]: objOrder + 1};
-            let updateObj = updateObjMaker(objKey, parentRef, updateValues);
-            updateList.push(updateObj);
-        }
-    }
     let promises = [];
-    if(updateList.length !== 0){
-        promises = promises.concat(updateList.map(item=>{
-            return update(ref(db, item.refPath), item.updateList);
-        })        );
+    let parentObj = getDataByPath(parentRef);
+    if(isObject(parentObj)){        
+        let objKeys = orderObjectKeysByProp(parentObj, orderPropName);
+        let lastKey = objKeys[objKeys.length - 1];
+        let lastOrder = parseInt(parentObj[lastKey][orderPropName], 10);
+        if(targetOrder === undefined){
+            targetOrder = lastOrder + 1;
+            console.log('沒有指定目標order，將目標order設為目前最大order+1')
+        }else if(targetOrder > lastOrder + 1){
+            targetOrder = lastOrder + 1;
+            console.log('目標order大於目前最大order+1，將目標order設為目前最大order+1')
+        }
+        obj[orderPropName] = targetOrder;
+        for(let i = 0; i < objKeys.length; i++){
+            let objKey = objKeys[i];
+            let objOrder = parseInt(parentObj[objKey][orderPropName], 10);
+            if(objOrder >= targetOrder){
+                let updateValues = {[orderPropName]: objOrder + 1};
+                let updateObj = updateObjMaker(objKey, parentRef, updateValues);
+                updateList.push(updateObj);
+            }
+        }
+        // console.log(JSON.stringify(obj));
+        if(updateList.length !== 0){
+            promises = promises.concat(updateList.map(item=>{
+                return update(ref(db, item.refPath), item.updateList);
+            })        );
+        }
+    }else if(parentObj === undefined){
+        obj[orderPropName] = 1;
+    }else{
+        throw new Error("parentRef不是指向object，也不是undefined")        
     }
     promises.push(set(push(getRef(parentRef)), obj));
     try{
