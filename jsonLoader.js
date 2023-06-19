@@ -23,6 +23,7 @@ const dialogTypes = ["talk", "label", "keyJump"];
 const languages = ["JP", "EN", "TW", "KR"];
 var nowDramaLanguages = [];
 var currentDramaKey = null;
+var nowShowingSubLanguage = false;
 
 var emptyDrama = {
     type: "drama",
@@ -287,6 +288,7 @@ async function showDramaContents(pagingDiv){
     let showSubLanguage = $('<div>').text('Show Sub Language').addClass('left').addClass('marginLeft');
     let showSubLanguageCheckBox = $('<input>').attr('id', 'showSubLanguageCheckBox').addClass('left');
     showSubLanguageCheckBox.attr('type','checkbox');
+    showSubLanguageCheckBox.prop('checked', nowShowingSubLanguage);
     showSubLanguageCheckBox.change(()=> {
         let left = $('.dialogTalkDivLeft');
         let right = $('.dialogTalkDivRight');
@@ -296,6 +298,7 @@ async function showDramaContents(pagingDiv){
         let self = $('#showSubLanguageCheckBox');
         if(self.prop('checked')){
             //show
+            nowShowingSubLanguage = true;
             left.removeClass('hide');
             left.toArray().forEach(element=>{
                 DisplayTalk(element, mainLang); });
@@ -306,6 +309,7 @@ async function showDramaContents(pagingDiv){
             // DisplayTalk(right, subLang);
             all.addClass('hide');
         }else{
+            nowShowingSubLanguage = false;
             //hide
             all.removeClass('hide');
             all.toArray().forEach(element=>{
@@ -473,18 +477,33 @@ async function DisplayDialogs(dialogDivContainer) {
 
                 let talkDiv = DOMmaker('div', 'dialogTalkDiv').attr('key', key);
                 let talkDivAll = DOMmaker('div', 'dialogTalkDivAll').attr('key', key);
+                if(nowShowingSubLanguage){
+                    talkDivAll.addClass('hide');
+                }
                 generateTalkDiv(talkDivAll, mainLang);
                 
                 let talkDivLeft = DOMmaker('div', 'dialogTalkDivLeft').attr('key', key);
-                talkDivLeft.addClass('hide');
+                if(nowShowingSubLanguage === false){
+                    talkDivLeft.addClass('hide');
+                }
                 generateTalkDiv(talkDivLeft, mainLang);
                 
                 let talkDivRight = DOMmaker('div', 'dialogTalkDivRight').attr('key', key);
-                talkDivRight.addClass('hide');
+                if(nowShowingSubLanguage === false){
+                    talkDivRight.addClass('hide');
+                }
                 generateTalkDiv(talkDivRight, subLang);
                 
                 talkDiv.append([talkDivAll, talkDivLeft, talkDivRight]);
                 dialogDiv.append([speakerDiv, talkDiv]);
+                
+                if(nowShowingSubLanguage){
+                    DisplayTalk(talkDivLeft, mainLang);
+                    DisplayTalk(talkDivRight, subLang);
+                }else{
+                    DisplayTalk(talkDivAll, mainLang);
+                }
+                
                 break;
             case 'label':
                 let labelDiv = DOMmaker('div', 'dialogLabelDiv');
@@ -536,7 +555,7 @@ async function DisplayDialogs(dialogDivContainer) {
                     $(`.dialogSpeakerString[key=${key}]`).text('Character :');
                     $(`.dialogDisplayNameString[key=${key}]`).text('DisplayName ' + mainLang + ' : ');
                     $(`.dialogSpeechString[key=${key}]`).text('Speech ' + mainLang + ' : ');
-                    if($('#showSubLanguageCheckBox').prop('checked')){
+                    if(nowShowingSubLanguage){
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
                         mainLangDiv.find(`.dialogDisplayNameInput[key=${key}]`)
@@ -584,7 +603,7 @@ async function DisplayDialogs(dialogDivContainer) {
                     languageControl.forEach(element=>{
                         $(element).prop('disabled', false);
                     });
-                    if($('#showSubLanguageCheckBox').prop('checked')){
+                    if(nowShowingSubLanguage){
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
                         let subLang = nowDramaLanguages[1];
@@ -626,7 +645,7 @@ async function DisplayDialogs(dialogDivContainer) {
                         $(element).prop('disabled', false);
                     });
 
-                    if($('#showSubLanguageCheckBox').prop('checked')){
+                    if(nowShowingSubLanguage){
                         let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
