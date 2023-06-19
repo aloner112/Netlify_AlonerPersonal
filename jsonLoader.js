@@ -196,7 +196,8 @@ function DisplayDramas(){
             let currentItem = dramas[dramaKey];
             let pagingDiv = $('<div>').addClass('paging');
             let pagingOrder = $('<div>').text(currentItem.dramaOrder).addClass('pagingOrder');
-            let pagingContent = $('<div>').html(currentItem.dramaName + '<br>' + currentItem.dateInStory).addClass('pagingContent');
+            let currentDramaName = decodeURIComponent(currentItem.dramaName);
+            let pagingContent = $('<div>').html( currentDramaName+ '<br>' + currentItem.dateInStory).addClass('pagingContent');
             pagingDiv.append([pagingOrder, pagingContent]);
             pagingDiv.attr({'data-key': dramaKey, 'dramaOrder': currentItem.dramaOrder});
             pagingDiv.click(()=> showDramaContents(pagingDiv));
@@ -242,11 +243,12 @@ async function showDramaContents(pagingDiv){
     dramaOrderDownButton.click(()=> {
         ObjectOrderAdd(1, data.dramaOrder, currentDramaKey, 'dramas', 'dramaOrder');
     });
+    let decodedDramaName = decodeURIComponent(data.dramaName);
     let dramaNameRow = $('<div>').addClass('rowParent');
     let dramaName = $('<div>').text('Drama Name:').attr({class: 'leftTitle'});
-    let dramaNameData = $('<div>').text(data.dramaName).addClass('left');
+    let dramaNameData = $('<div>').text(decodedDramaName).addClass('left');
     let dramaNameEdit = $('<input>').attr({ type: 'string',
-     value: data.dramaName, class: 'left', id:'dramaNameEdit'});
+     value: decodedDramaName, class: 'left', id:'dramaNameEdit'});
     let dramaNameButton = $('<button>').text('Modify Drama Name').addClass('left');
     dramaNameButton.click(() => EditDramaName());
     let dataDate = StringToDate(data.dateInStory);
@@ -391,6 +393,7 @@ function DisplayTalk(jQueryDiv, language){
     }
     else
     {
+        displayName = decodeURIComponent(displayName);
         let displayNameString = jQueryDiv.find('.dialogDisplayNameString');
         $(displayNameString).text(displayName + ' : ');
         let displayNameInput = jQueryDiv.find('.dialogDisplayNameInput');
@@ -403,6 +406,7 @@ function DisplayTalk(jQueryDiv, language){
     }
     else
     {
+        speech = decodeURIComponent(speech);
         let speechString = jQueryDiv.find('.dialogSpeechString');
         $(speechString).text(speech);
         let speechInput = jQueryDiv.find('.dialogSpeechInput');
@@ -444,7 +448,7 @@ async function DisplayDialogs(dialogDivContainer) {
             case 'talk':
                 let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
                 
-                let speakerValue = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
+                let speakerValue = dialogs[key].speaker === ""? 'no speaker': decodeURIComponent(dialogs[key].speaker);
                 let speakerString = DOMmaker('div', 'dialogSpeakerString').attr('key', key)
                 speakerString.text(speakerValue);
                 let speakerInput = DOMmaker('input', 'dialogSpeakerInput').attr('key', key);
@@ -459,7 +463,9 @@ async function DisplayDialogs(dialogDivContainer) {
 
                 function generateTalkDiv(parentDiv, language){
                     let displayName = dialogs[key]['displayName' + language];
+                    displayName = decodeURIComponent(displayName);
                     let speech = dialogs[key]['speech' + language];
+                    speech = decodeURIComponent(speech);
                     let displayNameDiv = DOMmaker('div', 'dialogDisplayNameDiv').attr('key', key);
                     let displayNameString = DOMmaker('div', 'dialogDisplayNameString').attr('key', key);
                     let displayNameInput = DOMmaker('input', 'dialogDisplayNameInput').attr('key', key);
@@ -587,24 +593,36 @@ async function DisplayDialogs(dialogDivContainer) {
                     if(nowShowingSubLanguage){
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
+                        let mainLangDisplayName = dialogs[key][`displayName${mainLang}`];
+                        mainLangDisplayName = decodeURIComponent(mainLangDisplayName);
                         mainLangDiv.find(`.dialogDisplayNameInput[key=${key}]`)
-                            .val(dialogs[key][`displayName${mainLang}`]);
+                            .val(mainLangDisplayName);
+                        let mainLangSpeech = dialogs[key][`speech${mainLang}`];
+                        mainLangSpeech = decodeURIComponent(mainLangSpeech);
                         mainLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
-                            .val(dialogs[key][`speech${mainLang}`]);
+                            .val(mainLangSpeech);
                         let subLang = nowDramaLanguages[1];
                         let subLangDiv = $(`.dialogTalkDivRight[key=${key}]`);
+                        let subLangDisplayName = dialogs[key][`displayName${subLang}`];
+                        subLangDisplayName = decodeURIComponent(subLangDisplayName);
                         subLangDiv.find(`.dialogDisplayNameInput[key="${key}"]`)
-                            .val(dialogs[key][`displayName${subLang}`]);
+                            .val(subLangDisplayName);
+                        let subLangSpeech = dialogs[key][`speech${subLang}`];
+                        subLangSpeech = decodeURIComponent(subLangSpeech);
                         subLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
-                            .val(dialogs[key][`speech${subLang}`]);
+                            .val(subLangSpeech);
                         
                     }else{
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivAll[key='${key}']`);
+                        let mainLangDisplayName = dialogs[key][`displayName${mainLang}`];
+                        mainLangDisplayName = decodeURIComponent(mainLangDisplayName);
+                        let mainLangSpeech = dialogs[key][`speech${mainLang}`];
+                        mainLangSpeech = decodeURIComponent(mainLangSpeech);
                         mainLangDiv.find(`.dialogDisplayNameInput[key=${key}]`)
-                            .val(dialogs[key][`displayName${mainLang}`]);
+                            .val(mainLangDisplayName);
                         mainLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
-                            .val(dialogs[key][`speech${mainLang}`]);
+                            .val(mainLangSpeech);
                     }
                     
                     break;
@@ -682,18 +700,23 @@ async function DisplayDialogs(dialogDivContainer) {
 
                     if(nowShowingSubLanguage){
                         let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
+                        speaker = encodeURIComponent(speaker);
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
                         let mainLangDisplayName = mainLangDiv.find(
                             `.dialogDisplayNameInput[key=${key}]`).val();
+                        mainLangDisplayName = encodeURIComponent(mainLangDisplayName);
                         let mainLangSpeech = mainLangDiv.find(
                             `.dialogSpeechInput[key="${key}"]`).val();
+                        mainLangSpeech = encodeURIComponent(mainLangSpeech);
                         let subLang = nowDramaLanguages[1];
                         let subLangDiv = $(`.dialogTalkDivRight[key=${key}]`);
                         let subLangDisplayName = subLangDiv.find(
                             `.dialogDisplayNameInput[key="${key}"]`).val();
+                        subLangDisplayName = encodeURIComponent(subLangDisplayName);
                         let subLangSpeech = subLangDiv.find(
                             `.dialogSpeechInput[key="${key}"]`).val();
+                        subLangSpeech = encodeURIComponent(subLangSpeech);
                         let updateObj = {};
                         let dataMainLangDisplayName = dialogs[key][`displayName${mainLang}`];
                         let dataMainLangSpeech = dialogs[key][`speech${mainLang}`];
@@ -723,12 +746,15 @@ async function DisplayDialogs(dialogDivContainer) {
                         DisplayTalk(subLangDiv, subLang);
                     }else{
                         let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
+                        speaker = encodeURIComponent(speaker);
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivAll[key='${key}']`);
                         let mainLangDisplayName = mainLangDiv.find(
                             `.dialogDisplayNameInput[key=${key}]`).val();
+                        mainLangDisplayName = encodeURIComponent(mainLangDisplayName);
                         let mainLangSpeech = mainLangDiv.find(
                             `.dialogSpeechInput[key="${key}"]`).val();
+                        mainLangSpeech = encodeURIComponent(mainLangSpeech);
                         let updateObj = {};
                         let dataMainLangDisplayName = dialogs[key][`displayName${mainLang}`];
                         let dataMainLangSpeech = dialogs[key][`speech${mainLang}`];
