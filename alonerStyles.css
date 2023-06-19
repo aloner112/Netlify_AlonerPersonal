@@ -104,6 +104,33 @@ body{
     margin-right: 5px;
     /*background-color: #eab0dc;*/
 }
+.dialogLabelDiv{
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    margin: 5px;
+}
+.labelTitleDiv{
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    margin: 5px;
+}
+.labelNameDiv{
+    display: flex;
+    margin: 5px;
+}
+.labelNameInput{
+    display: none;
+}
+.labelNameDiv.editing{
+    display: none;
+}
+.labelNameInput.editing{
+    display: flex;
+    margin: 5px;
+}
+
 .dialogSpeakerDiv{
     /*padding-left: 5px;*/
     width: 200px;

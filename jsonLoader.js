@@ -507,6 +507,30 @@ async function DisplayDialogs(dialogDivContainer) {
                 break;
             case 'label':
                 let labelDiv = DOMmaker('div', 'dialogLabelDiv');
+                labelDiv.attr('key', key);
+                let labelTitleDiv = DOMmaker('div', 'labelTitleDiv');
+                labelTitleDiv.text('Label: ');
+                labelTitleDiv.attr('key', key);
+                let labelName = DOMmaker('div', 'labelNameDiv');
+                let labelNameInput = DOMmaker('input', 'labelNameInput');
+                if(typeof dialogs[key].labelName !== 'string'){
+                    labelName.text('dialogs[key].labelName !== \'string\'');
+                    labelNameInput.val("");
+                }else{
+                    let dataLabelName = decodeURIComponent(dialogs[key].labelName);
+                    if(dataLabelName === ''){
+                        labelName.text('Label name is Empty');
+                        labelName.css('color', 'gray');
+                    }else{
+                        labelName.text(dataLabelName);
+                        labelName.css('color', 'black');
+                    }
+                    labelNameInput.val(dataLabelName);
+                }
+                labelName.attr('key', key);
+                labelNameInput.attr('key', key);
+                labelDiv.append([labelTitleDiv, labelName, labelNameInput]);
+                dialogDiv.append([labelDiv]);
                 break;
             case 'keyJump':
                 break;
@@ -528,6 +552,11 @@ async function DisplayDialogs(dialogDivContainer) {
             `.dialogSpeakerString[key=${key}]`,
             `.dialogSpeakerInput[key=${key}]`
         ];
+        
+        let EditingLabelElements = [
+            `.labelNameDiv[key=${key}]`,
+            `.labelNameInput[key=${key}]`
+        ];
 
         let EditContentElement = [`.dialogDisplayNameInput[key=${key}]`,
             `.dialogSpeechInput[key=${key}]`, `.dialogSpeakerInput[key=${key}]`];
@@ -544,13 +573,13 @@ async function DisplayDialogs(dialogDivContainer) {
             EditingElements.forEach(element =>{
                 $(element).addClass('editing');
             });
+            languageControl.forEach(element=>{
+                $(element).prop('disabled', true);
+            });
             switch(dialogs[key].type){
                 case 'talk':
                     EditingTalkElements.forEach(element =>{
                         $(element).addClass('editing');
-                    });
-                    languageControl.forEach(element=>{
-                        $(element).prop('disabled', true);
                     });
                     $(`.dialogSpeakerString[key=${key}]`).text('Character :');
                     $(`.dialogDisplayNameString[key=${key}]`).text('DisplayName ' + mainLang + ' : ');
@@ -580,6 +609,9 @@ async function DisplayDialogs(dialogDivContainer) {
                     
                     break;
                 case 'label':
+                    EditingLabelElements.forEach(element=>{
+                        $(element).addClass('editing');
+                    });
                     break;
                 case 'keyJump':
                     break;
@@ -598,11 +630,11 @@ async function DisplayDialogs(dialogDivContainer) {
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
+            languageControl.forEach(element=>{
+                $(element).prop('disabled', false);
+            });
             switch(dialogs[key].type){
                 case 'talk':
-                    languageControl.forEach(element=>{
-                        $(element).prop('disabled', false);
-                    });
                     if(nowShowingSubLanguage){
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
@@ -620,6 +652,9 @@ async function DisplayDialogs(dialogDivContainer) {
                     });
                     break;
                 case 'label':
+                    EditingLabelElements.forEach(element=>{
+                        $(element).removeClass('editing');
+                    });
                     break;
                 case 'keyJump':
                     break;
@@ -639,11 +674,11 @@ async function DisplayDialogs(dialogDivContainer) {
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
+            languageControl.forEach(element=>{
+                $(element).prop('disabled', false);
+            });
             switch(dialogs[key].type){
                 case 'talk':
-                    languageControl.forEach(element=>{
-                        $(element).prop('disabled', false);
-                    });
 
                     if(nowShowingSubLanguage){
                         let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
@@ -721,6 +756,22 @@ async function DisplayDialogs(dialogDivContainer) {
                     // updateObjMaker(key, )
                     break;
                 case 'label':
+                    let input = $(`.labelNameInput[key=${key}]`).val();
+                    input = encodeURIComponent(input);
+                    if(dialogs[key]['labelName'] !== input){
+                        let updateObj = {};
+                        updateObj['labelName'] = input;
+                        updateObj = updateObjMaker(key, nowRefPath, updateObj)
+                        let promises = await batchUpdateDatabase([updateObj]);
+                        try{
+                            await Promise.all(promises);
+                        }catch(error){
+                            console.error(error);
+                        }
+                    }
+                    EditingLabelElements.forEach(element=>{
+                        $(element).removeClass('editing');
+                    });
                     break;
                 case 'keyJump':
                     break;
