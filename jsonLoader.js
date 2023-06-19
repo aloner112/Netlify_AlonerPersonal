@@ -406,10 +406,11 @@ function DisplayTalk(jQueryDiv, language){
     }
     else
     {
-        speech = decodeURIComponent(speech);
+        speech = decodeURIComponent(speech).replace(/\n/g, '<br>');
         let speechString = jQueryDiv.find('.dialogSpeechString');
-        $(speechString).text(speech);
+        $(speechString).html(speech);
         let speechInput = jQueryDiv.find('.dialogSpeechInput');
+        speech = speech.replace(/<br>/g, '\n');
         $(speechInput).val(speech);
     }
 }
@@ -448,7 +449,8 @@ async function DisplayDialogs(dialogDivContainer) {
             case 'talk':
                 let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
                 
-                let speakerValue = dialogs[key].speaker === ""? 'no speaker': decodeURIComponent(dialogs[key].speaker);
+                let speakerValue = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
+                speakerValue = decodeURIComponent(speakerValue);
                 let speakerString = DOMmaker('div', 'dialogSpeakerString').attr('key', key)
                 speakerString.text(speakerValue);
                 let speakerInput = DOMmaker('input', 'dialogSpeakerInput').attr('key', key);
@@ -466,6 +468,7 @@ async function DisplayDialogs(dialogDivContainer) {
                     displayName = decodeURIComponent(displayName);
                     let speech = dialogs[key]['speech' + language];
                     speech = decodeURIComponent(speech);
+                    // speech = speech.replace(/\n/g, '<br>');
                     let displayNameDiv = DOMmaker('div', 'dialogDisplayNameDiv').attr('key', key);
                     let displayNameString = DOMmaker('div', 'dialogDisplayNameString').attr('key', key);
                     let displayNameInput = DOMmaker('input', 'dialogDisplayNameInput').attr('key', key);
@@ -474,7 +477,7 @@ async function DisplayDialogs(dialogDivContainer) {
                     displayNameDiv.append([displayNameString, displayNameInput]);
                     let speechDiv = DOMmaker('div', 'dialogSpeechDiv').attr('key', key);
                     let speechString = DOMmaker('div', 'dialogSpeechString').attr('key', key);
-                    speechString.text(speech);
+                    // speechString.text(speech);
                     let speechInput = DOMmaker('textarea', 'dialogSpeechInput').attr('key', key);
                     speechInput.attr({type: 'string', value: speech});
                     speechDiv.append([speechString, speechInput]);
@@ -599,6 +602,7 @@ async function DisplayDialogs(dialogDivContainer) {
                             .val(mainLangDisplayName);
                         let mainLangSpeech = dialogs[key][`speech${mainLang}`];
                         mainLangSpeech = decodeURIComponent(mainLangSpeech);
+                        mainLangSpeech = mainLangSpeech.replace(/<br>/g, '\n');
                         mainLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
                             .val(mainLangSpeech);
                         let subLang = nowDramaLanguages[1];
@@ -609,6 +613,7 @@ async function DisplayDialogs(dialogDivContainer) {
                             .val(subLangDisplayName);
                         let subLangSpeech = dialogs[key][`speech${subLang}`];
                         subLangSpeech = decodeURIComponent(subLangSpeech);
+                        subLangSpeech = subLangSpeech.replace(/<br>/g, '\n');
                         subLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
                             .val(subLangSpeech);
                         
@@ -619,6 +624,7 @@ async function DisplayDialogs(dialogDivContainer) {
                         mainLangDisplayName = decodeURIComponent(mainLangDisplayName);
                         let mainLangSpeech = dialogs[key][`speech${mainLang}`];
                         mainLangSpeech = decodeURIComponent(mainLangSpeech);
+                        mainLangSpeech = mainLangSpeech.replace(/<br>/g, '\n');
                         mainLangDiv.find(`.dialogDisplayNameInput[key=${key}]`)
                             .val(mainLangDisplayName);
                         mainLangDiv.find(`.dialogSpeechInput[key="${key}"]`)
@@ -688,6 +694,7 @@ async function DisplayDialogs(dialogDivContainer) {
         submitDialogBtn.text('Submit');
         submitDialogBtn.click(async function(){
             let speakerVal = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
+            speakerVal = decodeURIComponent(speakerVal);
             $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
@@ -708,6 +715,7 @@ async function DisplayDialogs(dialogDivContainer) {
                         mainLangDisplayName = encodeURIComponent(mainLangDisplayName);
                         let mainLangSpeech = mainLangDiv.find(
                             `.dialogSpeechInput[key="${key}"]`).val();
+                        mainLangSpeech = mainLangSpeech.replace(/\n/g, '<br>');
                         mainLangSpeech = encodeURIComponent(mainLangSpeech);
                         let subLang = nowDramaLanguages[1];
                         let subLangDiv = $(`.dialogTalkDivRight[key=${key}]`);
@@ -716,6 +724,7 @@ async function DisplayDialogs(dialogDivContainer) {
                         subLangDisplayName = encodeURIComponent(subLangDisplayName);
                         let subLangSpeech = subLangDiv.find(
                             `.dialogSpeechInput[key="${key}"]`).val();
+                        subLangSpeech = subLangSpeech.replace(/\n/g, '<br>');
                         subLangSpeech = encodeURIComponent(subLangSpeech);
                         let updateObj = {};
                         let dataMainLangDisplayName = dialogs[key][`displayName${mainLang}`];
@@ -754,6 +763,7 @@ async function DisplayDialogs(dialogDivContainer) {
                         mainLangDisplayName = encodeURIComponent(mainLangDisplayName);
                         let mainLangSpeech = mainLangDiv.find(
                             `.dialogSpeechInput[key="${key}"]`).val();
+                        mainLangSpeech = mainLangSpeech.replace(/\n/g, '<br>');
                         mainLangSpeech = encodeURIComponent(mainLangSpeech);
                         let updateObj = {};
                         let dataMainLangDisplayName = dialogs[key][`displayName${mainLang}`];
