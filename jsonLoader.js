@@ -497,6 +497,7 @@ async function DisplayDialogs(dialogDivContainer) {
         
         let EditingElements = [`.editDialogButton[key=${key}]`,
             `.submitDialogButton[key=${key}]`,
+            `.cancelEditDialogButton[key=${key}]`,
             `.delDialogButton[key=${key}]`];
             
         
@@ -567,7 +568,48 @@ async function DisplayDialogs(dialogDivContainer) {
                     break;
             }
         });
-        
+
+        let cancelEditDialogBtn = DOMmaker('button', 'cancelEditDialogButton');
+        cancelEditDialogBtn.attr('key', key);
+        cancelEditDialogBtn.attr('order', dialogs[key].order);
+        cancelEditDialogBtn.text('Cancel');
+        cancelEditDialogBtn.click(async function(){
+            let speakerVal = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
+            $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
+            EditingElements.forEach(element =>{
+                $(element).removeClass('editing');
+            });
+            switch(dialogs[key].type){
+                case 'talk':
+                    languageControl.forEach(element=>{
+                        $(element).prop('disabled', false);
+                    });
+                    if($('#showSubLanguageCheckBox').prop('checked')){
+                        let mainLang = nowDramaLanguages[0];
+                        let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
+                        let subLang = nowDramaLanguages[1];
+                        let subLangDiv = $(`.dialogTalkDivRight[key=${key}]`);
+                        DisplayTalk(mainLangDiv, mainLang);
+                        DisplayTalk(subLangDiv, subLang);
+                    }else{
+                        let mainLang = nowDramaLanguages[0];
+                        let mainLangDiv = $(`.dialogTalkDivAll[key='${key}']`);
+                        DisplayTalk(mainLangDiv, mainLang);
+                    }
+                    EditingTalkElements.forEach(element =>{
+                        $(element).removeClass('editing');
+                    });
+                    break;
+                case 'label':
+                    break;
+                case 'keyJump':
+                    break;
+                default:
+                    break;
+            }
+            
+            
+        });
         let submitDialogBtn = DOMmaker('button', 'submitDialogButton');
         submitDialogBtn.attr('key', key);
         submitDialogBtn.attr('order', dialogs[key].order);
@@ -577,7 +619,7 @@ async function DisplayDialogs(dialogDivContainer) {
             $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
-            })
+            });
             switch(dialogs[key].type){
                 case 'talk':
                     languageControl.forEach(element=>{
@@ -687,7 +729,7 @@ async function DisplayDialogs(dialogDivContainer) {
                 'order', dialogs[key].order + 1);
         });
         
-        editDiv.append([editDialogBtn, submitDialogBtn, delDialogBtn, addDialogBelowSelect, addDialogBelowBtn]);
+        editDiv.append([editDialogBtn, submitDialogBtn, cancelEditDialogBtn, delDialogBtn, addDialogBelowSelect, addDialogBelowBtn]);
 
         dialogDiv.append([editDiv]);
         dialogDivContainer.append(dialogDiv);
