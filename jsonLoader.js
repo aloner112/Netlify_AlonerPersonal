@@ -574,10 +574,16 @@ async function DisplayDialogs(dialogDivContainer) {
             '#subLanguageSelect', '#mainLanguageSelect'];
         
         let editDiv = DOMmaker('div', 'dialogEditDiv');
+        function DisplaySpeaker() {
+            let speakerVal = decodeURIComponent(dialogs[key].speaker);
+            speakerVal = speakerVal === "" ? 'no speaker' : speakerVal;
+            $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
+        }
         let editDialogBtn = DOMmaker('button', 'editDialogButton');
         editDialogBtn.attr('key', key);
         editDialogBtn.attr('order', dialogs[key].order);
         editDialogBtn.text('Edit');
+
         editDialogBtn.click(()=>{
             EditingElements.forEach(element =>{
                 $(element).addClass('editing');
@@ -643,15 +649,14 @@ async function DisplayDialogs(dialogDivContainer) {
                     break;
             }
         });
-
         let cancelEditDialogBtn = DOMmaker('button', 'cancelEditDialogButton');
         cancelEditDialogBtn.attr('key', key);
         cancelEditDialogBtn.attr('order', dialogs[key].order);
+
         cancelEditDialogBtn.text('Cancel');
+
         cancelEditDialogBtn.click(async function(){
-            let speakerVal = decodeURIComponent(dialogs[key].speaker);
-            speakerVal = speakerVal === ""? 'no speaker': speakerVal;
-            $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
+            DisplaySpeaker();
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
@@ -694,9 +699,7 @@ async function DisplayDialogs(dialogDivContainer) {
         submitDialogBtn.attr('order', dialogs[key].order);
         submitDialogBtn.text('Submit');
         submitDialogBtn.click(async function(){
-            let speakerVal = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
-            speakerVal = decodeURIComponent(speakerVal);
-            $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
+            DisplaySpeaker();
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
