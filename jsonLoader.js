@@ -649,7 +649,8 @@ async function DisplayDialogs(dialogDivContainer) {
         cancelEditDialogBtn.attr('order', dialogs[key].order);
         cancelEditDialogBtn.text('Cancel');
         cancelEditDialogBtn.click(async function(){
-            let speakerVal = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
+            let speakerVal = decodeURIComponent(dialogs[key].speaker);
+            speakerVal = speakerVal === ""? 'no speaker': speakerVal;
             $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
