@@ -4,6 +4,7 @@ import { app, auth } from "/auth.js";
 import { DateToString, StringToDate, DateToStringTime,
     DateToStringDate } from "/StringTimeHelper.js"
 import{DisplayListObject, DisplayTitle, makeDropdownWithStringArray, DOMmaker} from "/ListDisplayer.js";
+import{ObjectOrderAdd, getDataByPath, updateObjMaker, batchUpdateDatabase, CheckObject, isObject}from "/DatabaseUtils.js"
 
 auth.onAuthStateChanged(()=>{
     if(auth.currentUser){
@@ -365,16 +366,19 @@ async function showDramaContents(pagingDiv){
     $('#dramaContent').append([dramaOrderRow, dramaNameRow, dateInStoryRow,languageDiv]);
     
     //Add Dialog Div
-    let dialogTitle = DOMmaker('div', 'dialogTitle');
-    let dialogTitleTxt = $('<div>').text('Dialog').addClass('dialogTitleTxt');
-    let dialogTitleSpace = $('<div>').addClass('fillSpace');
+    // let dialogDivContainer = 
+    // let dialogDivContainer = DOMmaker('div', 'dialogDivContainer', 'listTitleDiv');
     let dialogDivContainer = DOMmaker('div', 'dialogDivContainer', 'dialogDivContainer');
-    let addDialogDiv = DOMmaker('div', 'addDialogDiv', 'addDialogDiv');
-    
+    // let addDialogDiv = DisplayTitle('Dialog', dialogTypes);
+    let dialogTitle = DOMmaker('div', 'listTitleDiv');
+    let dialogTitleTxt = $('<div>').text('Dialog').addClass('listTitleText');
+    let dialogTitleSpace = $('<div>').addClass('fillSpace');
+    let addDialogDiv = DOMmaker('div', 'addDialogDiv', 'addDialogDiv');    
     let newDialogType = makeDropdownWithStringArray(dialogTypes);
     newDialogType.attr('id', 'newDialogType');
     newDialogType.addClass('newDialogType');
     let addDialogBtn = DOMmaker('button', 'addDialogBtn', 'addDialogBtn');
+    // let addDialogBtn = addDialogDiv.find('.listTitleAddNewObjectButton');
     addDialogBtn.text('add dialog');
     addDialogBtn.click(()=> {
         let newDialog = generateNewDialog(newDialogType.val());
@@ -444,22 +448,26 @@ async function DisplayDialogs(dialogDivContainer) {
     
     dialogKeys.forEach((key)=>{
         let nowRefPath = 'dramas/'+ currentDramaKey +'/dialogs';
+        
         let dialogDiv = DOMmaker('div', 'dialog').attr('key', key);
         let orderDiv = DOMmaker('div', 'dialogOrderDiv').attr('key', key);
         let orderUpBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
         orderUpBtn.text('▲');
         $(orderUpBtn).click(()=>{
-            ObjectOrderAdd(-1, dialogs[key].order, key, nowRefPath, 'order');
+            ObjectOrderAdd(-1, dialogs[key].order, key, nowRefPath, 'order',
+                db, refProj, project);
         })
         let orderDownBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
         orderDownBtn.text('▼');
         $(orderDownBtn).click(()=>{
-            ObjectOrderAdd(1, dialogs[key].order, key, nowRefPath, 'order');
+            ObjectOrderAdd(1, dialogs[key].order, key, nowRefPath, 'order',
+                db, refProj, project);
         })
         let orderTxt = DOMmaker('div', 'dialogOrderTxt').attr('key', key);
         orderTxt.text(dialogs[key].order);
         orderDiv.append([orderUpBtn, orderTxt, orderDownBtn]);
         dialogDiv.append(orderDiv);
+        
         switch(dialogs[key].type){
             case 'talk':
                 let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
@@ -762,8 +770,8 @@ async function DisplayDialogs(dialogDivContainer) {
                             updateObj[`speech${subLang}`] = subLangSpeech; }
                         if(Object.keys(updateObj).length > 0){
                             let updateList = [];
-                            updateList.push(updateObjMaker(key, nowRefPath, updateObj));
-                            let promises = await batchUpdateDatabase(updateList);
+                            updateList.push(updateObjMaker(key, nowRefPath, updateObj, refProj));
+                            let promises = await batchUpdateDatabase(updateList, db);
                             try{
                                 await Promise.all(promises);
                             }catch(error){
@@ -795,8 +803,8 @@ async function DisplayDialogs(dialogDivContainer) {
                             updateObj[`speech${mainLang}`] = mainLangSpeech; }
                         if(Object.keys(updateObj).length > 0){
                             let updateList = [];
-                            updateList.push(updateObjMaker(key, nowRefPath, updateObj));
-                            let promises = await batchUpdateDatabase(updateList);
+                            updateList.push(updateObjMaker(key, nowRefPath, updateObj, refProj));
+                            let promises = await batchUpdateDatabase(updateList, db);
                             try{
                                 await Promise.all(promises);
                             }catch(error){
@@ -816,8 +824,8 @@ async function DisplayDialogs(dialogDivContainer) {
                     if(dialogs[key]['labelName'] !== input){
                         let updateObj = {};
                         updateObj['labelName'] = input;
-                        updateObj = updateObjMaker(key, nowRefPath, updateObj)
-                        let promises = await batchUpdateDatabase([updateObj]);
+                        updateObj = updateObjMaker(key, nowRefPath, updateObj, refProj)
+                        let promises = await batchUpdateDatabase([updateObj], db);
                         try{
                             await Promise.all(promises);
                         }catch(error){
@@ -895,121 +903,13 @@ function generateNewDialog(dialogType){
     return dialogToAdd;
 }
 
-function CheckObject(obj){
-    if(obj === undefined){return false;}
-    else if(Object.keys(obj).length === 0){return false;}
-    else {return true;}
-}
 
 
-//雖然參數是num，但只有正和負的差異，0是正
-async function ObjectOrderAdd(num, nowOrderString, nowKey, parentPath, orderPropName){
-    let nowOrder = parseInt(nowOrderString, 10);
-    if(num < 0 && nowOrder <= 1) {
-        console.log('Drama Order 不能小於1');
-        return;
-    }
-    let objs = getDataByPath(parentPath);
-    let objKeys = Object.keys(objs);
-    objKeys.sort((a, b)=> {
-        let aOrder = parseInt(objs[a][orderPropName], 10);
-        let bOrder = parseInt(objs[b][orderPropName], 10);
-        return aOrder - bOrder;
-    })
-    objKeys.reverse();
-    
-    if(num >= 0 && nowOrder >= objKeys.length){
-        console.log('若Drama Order大於或等於目前最大的order值，則不改動order');
-        return;
-    }
-    
-    let datasToSwitch = [];
-    objKeys.forEach(nowObjKey =>{
-        let nowObjOrder = parseInt(objs[nowObjKey][orderPropName], 10);
-        var pushData = {'order': nowObjOrder, 'dataKey': nowObjKey};
-        if(num >= 0){
-            if(nowObjOrder > nowOrder) {
-                datasToSwitch.push(pushData);
-            }
-        }
-        else{
-            if(nowObjOrder < nowOrder){
-                datasToSwitch.push(pushData);
-            }
-        }
-    });
-    if(datasToSwitch.length == 0) {
-        console.log('沒有資料的order可替換');
-        return;
-    }
-    datasToSwitch.sort((a, b)=>{
-        let aValue = parseInt(a.order, 10);
-        let bValue = parseInt(b.order, 10);
-        return aValue - bValue;
-    });
-    if(num < 0){
-        datasToSwitch.reverse();
-    }
-    let dataToSwitchKey = datasToSwitch[0].dataKey;
-    let dataToSwitchOrder = parseInt(datasToSwitch[0].order);
-    if(Math.abs(nowOrder - dataToSwitchOrder) == 1){
-        let updateList = [];
-        //替換order
-        let updateList1 = {[orderPropName]: nowOrder};
-        let updateList2 = {[orderPropName]: dataToSwitchOrder};
-        updateList.push(updateObjMaker(dataToSwitchKey, parentPath,updateList1));
-        updateList.push(updateObjMaker(nowKey, parentPath,updateList2));
 
-        let promises = await batchUpdateDatabase(updateList);
 
-        try{
-            await Promise.all(promises);
-        }catch(error){
-            console.error(error);
-        }
-        
-    }else{
-        //如果目標Order沒被占用，直接寫入order
-        let addAmount = num >= 0 ? 1 : -1;
-        update(ref(db, refProj +'/' +parentPath + '/' + nowKey), {[orderPropName]: nowOrder + addAmount});
-    }
-}
 
-function updateObjMaker(key, parentPath, objValues){
-    let updateObj = {
-        refPath: refProj +'/' +parentPath + '/' + key,
-        updateList: objValues
-    }
-    return updateObj;
-}
 
-//updateObjs為一個Array，
-//每個內容成員有兩個物件，一個是refPath，以string紀載路徑
-//另一個是updateList，這是一個物件，紀載要更新的key以及內容
-async function batchUpdateDatabase(updateObjs){
-    
-    let promises = updateObjs.map(item =>{
-        if(CheckObject(item.refPath) !== true){
-            throw new Error('there is no refPath');
-        }
-        if(isObject(item.updateList) === false){
-            throw new Error('item.updateList is not a object');
-        }
-        let itemRef = ref(db, item.refPath);
-        let updateList = item.updateList;
-        return runTransaction(itemRef, (currentData)=>{
-            if(currentData){
-                for(let key in updateList){
-                    currentData[key] = updateList[key];
-                }
-                return currentData;
-            }else{
-                throw new Error('Current data does not exist');
-            }
-        })
-    })
-    return promises;
-}
+
 
 function DivsSameWidth(divs){
     let divWidths = [];
@@ -1103,7 +1003,7 @@ async function deleteDrama(key){
 async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
     let updateList = [];
     let promises = [];
-    let parentObj = getDataByPath(parentRef);
+    let parentObj = getDataByPath(parentRef, project);
     if(isObject(parentObj)){        
         let objKeys = orderObjectKeysByProp(parentObj, orderPropName);
         let lastKey = objKeys[objKeys.length - 1];
@@ -1121,7 +1021,7 @@ async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
             let objOrder = parseInt(parentObj[objKey][orderPropName], 10);
             if(objOrder >= targetOrder){
                 let updateValues = {[orderPropName]: objOrder + 1};
-                let updateObj = updateObjMaker(objKey, parentRef, updateValues);
+                let updateObj = updateObjMaker(objKey, parentRef, updateValues, refProj);
                 updateList.push(updateObj);
             }
         }
@@ -1145,12 +1045,12 @@ async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
 }
 
 async function deleteDataWithOrder(key, orderPropName, parentRef){
-    let delObj = getDataByPath(parentRef + '/' + key);
+    let delObj = getDataByPath(parentRef + '/' + key, project);
     if(isObject(delObj) === false){
         throw new Error("要刪除的物件不是object，也可能是undefined或null");
     }
     let delObjOrder = parseInt(delObj[orderPropName], 10);
-    let parentObj = getDataByPath(parentRef);
+    let parentObj = getDataByPath(parentRef, project);
     if(isObject(parentObj)=== false){
         throw new Error("parentRef不是指向object，也可能是undefined或null")
     }
@@ -1162,7 +1062,7 @@ async function deleteDataWithOrder(key, orderPropName, parentRef){
         let objOrder = parseInt(parentObj[objKey][orderPropName], 10);
         if(objOrder > delObjOrder && objOrder !== i){
             let updateValues = {[orderPropName]: i};
-            let updateObj = updateObjMaker(objKey, parentRef, updateValues);
+            let updateObj = updateObjMaker(objKey, parentRef, updateValues, refProj);
             updateList.push(updateObj);
         }
     }
@@ -1202,27 +1102,8 @@ function orderObjectKeysByProp(parentObj, propName){
     return objKeys;
 }
 
-function isObject(target){
-    if(target === undefined){
-        console.log('refPath is undefined');
-        return false;
-    }
-    if(typeof target !== 'object' ){
-        console.log('refPath is not a object');
-        return false;
-    }
-    if(target === null){
-        console.log('refPath is null');
-        return false;
-    }
-    return true;
-}
 
-function getDataByPath(refPath){
-    //refPath不用寫'projects/testProject01/'
-    let pathParts = refPath.split('/');
-    return pathParts.reduce((obj, part)=> obj[part], project);
-}
+
 
 //決定當刪除一個drama時，要選取哪一個drama
 function findClosestDiv(divs, selfDiv) {

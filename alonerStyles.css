@@ -71,7 +71,7 @@ body{
     background: #ffffff;
 }
 
-.dialogTitle{
+.listTitleDiv{
     margin-top: 4px;
     margin-bottom: 1px;
     padding: 1px;
@@ -80,7 +80,7 @@ body{
     display: flex;
 }
 
-.dialogTitleTxt{
+.listTitleText{
     display: flex;
     align-items: flex-end;
     font-family: 'Orbitron', sans-serif;
