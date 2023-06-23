@@ -61,6 +61,16 @@ body{
 
 }
 
+.keysDivContainer{
+    display: block;
+    width: 100%;
+    margin: 4px;
+    padding: 30px;
+    border: 1px solid #494949;
+    border-radius: 15px;
+    background: #ffffff;
+}
+
 .dialogTitle{
     margin-top: 4px;
     margin-bottom: 1px;

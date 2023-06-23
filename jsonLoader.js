@@ -3,6 +3,7 @@ import {getDatabase, ref, set, get, child, onValue, update, remove, push, equalT
 import { app, auth } from "/auth.js";
 import { DateToString, StringToDate, DateToStringTime,
     DateToStringDate } from "/StringTimeHelper.js"
+import{DisplayListObject, DisplayTitle, makeDropdownWithStringArray, DOMmaker} from "/ListDisplayer.js";
 
 auth.onAuthStateChanged(()=>{
     if(auth.currentUser){
@@ -174,12 +175,26 @@ function DisplayCharacters(){
     let characterContentDiv = $('<div>').addClass('characterContent');
 }
 
-function DisplayKeys(){}
+function DisplayKeys(){
+    var dataContentDiv = $('#dataContent')
+    dataContentDiv.empty();
+    
+    // let keysDivContainer = 
+    let keysDivContainer = DOMmaker('div', 'keysDivContainer');
+    let keysTitleContainer = DisplayTitle('Key');
+    // let keysTitleContainer = DOMmaker('div', 'dialogTitle');
+    // let keysTitle = DOMmaker('div', 'dialogTitleTxt').text('Keys');
+    // let keysTitleSpace = $('<div>').addClass('fillSpace');
+    // let keysTitleAddKeyBtn = DOMmaker('button', 'addDialogBtn', 'addKeyBtn');
+    // keysTitleAddKeyBtn.text('Add Key');
+    //
+    // let keys = project['keys'];
+    // keysTitleContainer.append([keysTitle, keysTitleSpace, keysTitleAddKeyBtn]);
+    keysDivContainer.append([keysTitleContainer]);
+    dataContentDiv.append(keysDivContainer);
+}
 
 function DisplayDramas(){
-    currentSubject = "dramas";
-    $('.subject').removeClass('selected');
-    $('#dramas').addClass('selected');
 
     let dramas = project.dramas;
     var dataContentDiv = $('#dataContent')
@@ -1237,19 +1252,19 @@ function getTypeKeysInJson(dataObj, targetType){
     return tmpDramaKeys;
 }
 
-function makeDropdownWithStringArray(array){
-    let dropdown = $('<select>');
-    for(let i=0; i<array.length; i++){
-        let option = $('<option>');
-        option.text(array[i]);
-        option.val(array[i]);
-        dropdown.append(option);
-    }
-    return dropdown;
-}
-
-function DOMmaker(DOMtype, DOMclass, DOMid){
-    let dom = $('<' + DOMtype + '>').addClass(DOMclass);
-    if(DOMid !== undefined){dom.attr('id', DOMid);}
-    return dom;
-}
+// function makeDropdownWithStringArray(array){
+//     let dropdown = $('<select>');
+//     for(let i=0; i<array.length; i++){
+//         let option = $('<option>');
+//         option.text(array[i]);
+//         option.val(array[i]);
+//         dropdown.append(option);
+//     }
+//     return dropdown;
+// }
+//
+// function DOMmaker(DOMtype, DOMclass, DOMid){
+//     let dom = $('<' + DOMtype + '>').addClass(DOMclass);
+//     if(DOMid !== undefined){dom.attr('id', DOMid);}
+//     return dom;
+// }
