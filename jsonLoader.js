@@ -129,11 +129,11 @@ function tmpAddSubjectButton(){
     addSubBtn.click(()=>{
         let newSubject = selectSubjectType.val();
         console.log('newSubject = '+newSubject);
-        if(newSubject == "character"){
+        if(newSubject === "character"){
             let newCharacter = {type: 'character', name: 'John', age: 30};
             let newChaRef = push(ref(db, refProj + '/' + newSubject + 's'));
             set(newChaRef, newCharacter);
-        }else if(newSubject == "key"){
+        }else if(newSubject === "key"){
             let newKey = {type: 'key', name: 'KeyName'};
             let newChaRef = push(ref(db, refProj + '/' + newSubject + 's'));
             set(newChaRef, newKey);
@@ -186,29 +186,148 @@ function DisplayKeys(){
     dataContentDiv.empty();
     
     let parentPath = 'keys';
+    let orderPropName = 'order';
     let parentObj = project[parentPath];
     
     // let keysDivContainer = 
     let keysDivContainer = DisplayListObject(parentPath, 'key',
-        'order', project);
-    // let keysDivContainer = DisplayListObject(parentPath, 'key',
-    //     'order', db, refProj, project);
-    // let keysTitleContainer = DisplayTitle('Key');
-    // let keysTitleContainer = DOMmaker('div', 'dialogTitle');
-    // let keysTitle = DOMmaker('div', 'dialogTitleTxt').text('Keys');
-    // let keysTitleSpace = $('<div>').addClass('fillSpace');
-    // let keysTitleAddKeyBtn = DOMmaker('button', 'addDialogBtn', 'addKeyBtn');
-    // keysTitleAddKeyBtn.text('Add Key');
-    //
-    // let keys = project['keys'];
-    // keysTitleContainer.append([keysTitle, keysTitleSpace, keysTitleAddKeyBtn]);
-    // keysDivContainer.append([keysTitleContainer]);
+        orderPropName, project);
     dataContentDiv.append(keysDivContainer);
     
     let titleAddKeyBtn = keysDivContainer.find('.listTitleAddNewObjectButton');
-    titleAddKeyBtn.click(()=>{
-        addDataWithOrder(emptyKey, parentPath, 'order');
+    titleAddKeyBtn.click(async function(){
+        await addDataWithOrder(emptyKey, parentPath, orderPropName);
     })
+    let keys = orderObjectKeysByProp(parentObj, orderPropName);
+    keys.forEach(key=>{
+        let obj = parentObj[key];
+        let objDiv = $(`.objDiv[key=${key}]`);
+        
+        //orderDiv
+        setOrderDiv(key, parentPath, orderPropName, obj);
+
+        //contentDiv
+        let contentDiv = objDiv.find('.objContentDiv');
+        let objNameDiv = DOMmaker('div', 'objMediumDiv');
+        let objNameField = makeEditableTxtField(obj, 'key', 'name', 'input');
+        objNameDiv.append(objNameField);
+        
+        let usageDiv = DOMmaker('div', 'objMediumDiv');
+        let usageTitle = DOMmaker('div', 'txtInputTitle');
+        usageTitle.text('Usage:');
+        let usageTxt = DOMmaker('div');
+        usageTxt.text('開發中');
+        usageDiv.append([usageTitle, usageTxt]);
+        
+        let objDescriptionDiv = DOMmaker('div', 'objDescriptionDiv');
+        let objDescriptionField = makeEditableTxtField(obj, 'key', 'description', 'textarea');
+        objDescriptionDiv.append(objDescriptionField);
+        
+        contentDiv.append([objNameDiv, usageDiv, objDescriptionDiv]);
+        
+        //editDiv
+        let editClasses = ['objTxt', 'txtInput', 'txtAreaInput',
+            'objEditButton', 'objCancelEditButton', 'objSubmitButton', 'objDelButton'];
+        
+        let editDiv = objDiv.find('.objEditDiv');
+        let editBtn = editDiv.find('.objEditButton');
+        editBtn.click(()=>{
+            editClasses.forEach(className =>{
+                let editClassDivs = objDiv.find(`.${className}`);
+                editClassDivs.addClass('editing');
+            });
+        });
+        let cancelBtn = objDiv.find('.objCancelEditButton');
+        cancelBtn.click(()=>{
+            editClasses.forEach(className =>{
+                let editClassDivs = objDiv.find(`.${className}`);
+                editClassDivs.removeClass('editing');
+            });
+        })
+        let submitBtn = objDiv.find('.objSubmitButton');
+        submitBtn.click(async function(){
+            editClasses.forEach(className =>{
+                let editClassDivs = objDiv.find(`.${className}`);
+                editClassDivs.removeClass('editing');
+            });
+            
+            let updateValue = {};
+            let needUpdate = false;
+            let inputFields = objDiv.find('.txtInput, .txtAreaInput').toArray();
+            inputFields.forEach(inputField =>{
+                inputField = $(inputField);
+                let valueKey = inputField.attr('valueKey');
+                let dataValue = obj[valueKey];
+                let inputValue = encodeURIComponent(inputField.val());
+                if(dataValue !== inputValue){
+                    needUpdate = true;
+                    updateValue[valueKey] = inputValue;
+                }
+            });
+            if(needUpdate){
+                let updateObj = updateObjMaker(key, parentPath, updateValue, refProj);
+                let promises = await batchUpdateDatabase([updateObj], db);
+                try{
+                    await Promise.all(promises);
+                }catch(error){
+                    console.error(error);
+                }
+            } 
+        });
+        let delBtn = objDiv.find('.objDelButton');
+        delBtn.click(async function(){
+            editClasses.forEach(className =>{
+                let editClassDivs = objDiv.find(`.${className}`);
+                editClassDivs.removeClass('editing');
+            });
+            await deleteDataWithOrder(key, orderPropName, parentPath, db, project, refProj);
+        });
+        let addBelowBtn = objDiv.find('.objAddBelowBtn');
+        addBelowBtn.click(async function(){
+            let targetOrder = parseInt(obj[orderPropName], 10) + 1;
+            await addDataWithOrder(emptyKey, parentPath, orderPropName, targetOrder); 
+        });
+    });
+}
+
+function makeEditableTxtField(obj, itemName, valueKey, inputType) {
+    let objNameTxt = DOMmaker('div', 'objTxt');
+    let dataTxt = decodeURIComponent(obj[valueKey]);
+    let dataTxtHtml = dataTxt.replace(/\n/g, '<br>');
+    objNameTxt.addClass(valueKey);
+    objNameTxt.html(dataTxtHtml);
+    let objNameInputTitle = DOMmaker('div', 'txtInputTitle');
+    objNameInputTitle.text(itemName + ' ' +valueKey + ':');
+    
+    let className = '';
+    switch(inputType){
+        case 'input':
+            className = 'txtInput';
+            break;
+        case 'textarea':
+            className = 'txtAreaInput';
+            break;
+        default:
+            console.error(`no such input type: ${inputType}`);
+            break;
+    }
+    let objNameInput = DOMmaker(inputType, className);
+    objNameInput.attr('valueKey', valueKey);
+    objNameInput.addClass(valueKey);
+    objNameInput.val(dataTxt);
+    return [objNameInputTitle, objNameTxt, objNameInput];
+}
+
+function setOrderDiv(key, parentPath, orderPropName, obj) {
+    let objDiv = $(`.objDiv[key=${key}]`);
+    let orderTxt = objDiv.find('.objOrderTxt');
+    orderTxt.text(obj[orderPropName]);
+    let orderUpBtn = objDiv.find('.objOrderButton.up');
+    orderUpBtn.click(() => ObjectOrderAdd(-1, obj[orderPropName], key,
+        parentPath, orderPropName, db, refProj, project));
+    let orderDownBtn = objDiv.find('.objOrderButton.down');
+    orderDownBtn.click(() => ObjectOrderAdd(1, obj[orderPropName], key,
+        parentPath, orderPropName, db, refProj, project));
 }
 
 function DisplayDramas(){

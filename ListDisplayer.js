@@ -36,7 +36,7 @@ export function MakeOrderDiv(){
     let orderDiv = DOMmaker('div', 'objOrderDiv');
     let orderUpBtn = DOMmaker('button', 'objOrderButton');
     // orderUpBtn.attr('key', key);
-    orderUpBtn.addClass('Up');
+    orderUpBtn.addClass('up');
     orderUpBtn.text('▲');
     // $(orderUpBtn).click(()=>{
     //     ObjectOrderAdd(-1, parentObj[key].order, key, parentPath, orderPropName,
@@ -44,7 +44,7 @@ export function MakeOrderDiv(){
     // })
     let orderDownBtn = DOMmaker('button', 'objOrderButton');
     // orderDownBtn.attr('key', key);
-    orderDownBtn.addClass('Down');
+    orderDownBtn.addClass('down');
     orderDownBtn.text('▼');
     // $(orderDownBtn).click(()=>{
     //     ObjectOrderAdd(1, parentObj[key].order, key, parentPath, orderPropName,
