@@ -226,67 +226,72 @@ function DisplayKeys(){
         contentDiv.append([objNameDiv, usageDiv, objDescriptionDiv]);
         
         //editDiv
-        let editClasses = ['objTxt', 'txtInput', 'txtAreaInput',
-            'objEditButton', 'objCancelEditButton', 'objSubmitButton', 'objDelButton'];
-        
-        let editDiv = objDiv.find('.objEditDiv');
-        let editBtn = editDiv.find('.objEditButton');
-        editBtn.click(()=>{
-            editClasses.forEach(className =>{
-                let editClassDivs = objDiv.find(`.${className}`);
-                editClassDivs.addClass('editing');
-            });
+        setEditDiv(obj, key, parentPath, orderPropName);
+    });
+}
+
+function setEditDiv(obj, key, parentPath, orderPropName) {
+    let objDiv = $(`.objDiv[key=${key}]`);
+    let editClasses = ['objTxt', 'txtInput', 'txtAreaInput',
+        'objEditButton', 'objCancelEditButton', 'objSubmitButton', 'objDelButton'];
+
+    let editDiv = objDiv.find('.objEditDiv');
+    let editBtn = editDiv.find('.objEditButton');
+    editBtn.click(() => {
+        editClasses.forEach(className => {
+            let editClassDivs = objDiv.find(`.${className}`);
+            editClassDivs.addClass('editing');
         });
-        let cancelBtn = objDiv.find('.objCancelEditButton');
-        cancelBtn.click(()=>{
-            editClasses.forEach(className =>{
-                let editClassDivs = objDiv.find(`.${className}`);
-                editClassDivs.removeClass('editing');
-            });
-        })
-        let submitBtn = objDiv.find('.objSubmitButton');
-        submitBtn.click(async function(){
-            editClasses.forEach(className =>{
-                let editClassDivs = objDiv.find(`.${className}`);
-                editClassDivs.removeClass('editing');
-            });
-            
-            let updateValue = {};
-            let needUpdate = false;
-            let inputFields = objDiv.find('.txtInput, .txtAreaInput').toArray();
-            inputFields.forEach(inputField =>{
-                inputField = $(inputField);
-                let valueKey = inputField.attr('valueKey');
-                let dataValue = obj[valueKey];
-                let inputValue = encodeURIComponent(inputField.val());
-                if(dataValue !== inputValue){
-                    needUpdate = true;
-                    updateValue[valueKey] = inputValue;
-                }
-            });
-            if(needUpdate){
-                let updateObj = updateObjMaker(key, parentPath, updateValue, refProj);
-                let promises = await batchUpdateDatabase([updateObj], db);
-                try{
-                    await Promise.all(promises);
-                }catch(error){
-                    console.error(error);
-                }
-            } 
+    });
+    let cancelBtn = objDiv.find('.objCancelEditButton');
+    cancelBtn.click(() => {
+        editClasses.forEach(className => {
+            let editClassDivs = objDiv.find(`.${className}`);
+            editClassDivs.removeClass('editing');
         });
-        let delBtn = objDiv.find('.objDelButton');
-        delBtn.click(async function(){
-            editClasses.forEach(className =>{
-                let editClassDivs = objDiv.find(`.${className}`);
-                editClassDivs.removeClass('editing');
-            });
-            await deleteDataWithOrder(key, orderPropName, parentPath, db, project, refProj);
+    })
+    let submitBtn = objDiv.find('.objSubmitButton');
+    submitBtn.click(async function () {
+        editClasses.forEach(className => {
+            let editClassDivs = objDiv.find(`.${className}`);
+            editClassDivs.removeClass('editing');
         });
-        let addBelowBtn = objDiv.find('.objAddBelowBtn');
-        addBelowBtn.click(async function(){
-            let targetOrder = parseInt(obj[orderPropName], 10) + 1;
-            await addDataWithOrder(emptyKey, parentPath, orderPropName, targetOrder); 
+
+        let updateValue = {};
+        let needUpdate = false;
+        let inputFields = objDiv.find('.txtInput, .txtAreaInput').toArray();
+        inputFields.forEach(inputField => {
+            inputField = $(inputField);
+            let valueKey = inputField.attr('valueKey');
+            let dataValue = obj[valueKey];
+            let inputValue = encodeURIComponent(inputField.val());
+            if (dataValue !== inputValue) {
+                needUpdate = true;
+                updateValue[valueKey] = inputValue;
+            }
         });
+        if (needUpdate) {
+            let updateObj = updateObjMaker(key, parentPath, updateValue, refProj);
+            let promises = await batchUpdateDatabase([updateObj], db);
+            try {
+                await Promise.all(promises);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    });
+    let delBtn = objDiv.find('.objDelButton');
+    delBtn.click(async function () {
+        editClasses.forEach(className => {
+            let editClassDivs = objDiv.find(`.${className}`);
+            editClassDivs.removeClass('editing');
+        });
+        await deleteDataWithOrder(key, orderPropName, parentPath, db, project, refProj);
+    });
+    let addBelowBtn = objDiv.find('.objAddBelowBtn');
+    addBelowBtn.click(async function () {
+        let targetOrder = parseInt(obj[orderPropName], 10) + 1;
+        await addDataWithOrder(emptyKey, parentPath, orderPropName, targetOrder);
     });
 }
 

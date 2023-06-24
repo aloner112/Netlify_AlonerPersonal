@@ -202,6 +202,7 @@ body{
     margin-left: 17px;
     justify-self: center;
     width: calc(100% - 42px);
+    resize: none;
 }
 
 .dialogSpeakerDiv{
