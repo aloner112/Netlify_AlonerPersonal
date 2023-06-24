@@ -1,47 +1,85 @@
-﻿import{ObjectOrderAdd, getDataByPath, updateObjMaker, batchUpdateDatabase, CheckObject, isObject}from "/DatabaseUtils.js"
+﻿import{ObjectOrderAdd, getDataByPath, updateObjMaker, batchUpdateDatabase,
+    CheckObject, isObject, deleteDataWithOrder}from "/DatabaseUtils.js"
 
-export function DisplayListObject(parentObj, objName, objTypes, orderPropName){
-    let ListDiv = $('<div>');
+export function DisplayListObject(parentPath, objName, orderPropName, projectObject, objTypes ){
+    // let parentObject = getDataByPath(parentPath, projectObject);
+    let listDiv = $('<div>').addClass('listDivContainer');
     let titleDiv = DisplayTitle(objName, objTypes);
-    let objDivs = DisplayObjs(parentObj, objName, objTypes, orderPropName);
+    // let ListDiv = $('<div>').addClass('listContainer');
+    let objDivs = DisplayObjs(parentPath, objName, orderPropName, projectObject, objTypes);
+    listDiv.append([titleDiv, objDivs]);
+    return listDiv;
 }
 
-function DisplayObjs(parentObj, objName, objTypes, orderPropName) {
+function DisplayObjs(parentPath, objName, orderPropName, projectObject, objTypes) {
+    let parentObj = getDataByPath(parentPath, projectObject);
     let keys = Object.keys(parentObj);
     keys = keys.sort((a, b)=>{
         return parentObj[a][orderPropName] - parentObj[b][orderPropName];
     })
+    
+    let objDivContainer = $('<div>').addClass('objDivContainer');
     keys.forEach(key =>{
         let objDiv = $('<div>').addClass('objDiv');
         objDiv.attr('key', key);
-        let orderDiv = MakeOrderDiv(key, parentObj);
+        let orderDiv = MakeOrderDiv();
         let objContentDiv = $('<div>').addClass('objContentDiv');
-        let editDiv = MakeEditDiv();
+        let editDiv = MakeEditDiv(key, objName, objTypes);
+        objDiv.append([orderDiv, objContentDiv, editDiv]);
+        objDivContainer.append(objDiv);
     })
-    return undefined;
+    return objDivContainer;
 }
 
-export function MakeOrderDiv(key, parentObj){
-    let nowRefPath = '';
-    let orderDiv = DOMmaker('div', 'objOrderDiv').attr('key', key);
+export function MakeOrderDiv(){
+    // let parentPath = 'keys';
+    let orderDiv = DOMmaker('div', 'objOrderDiv');
     let orderUpBtn = DOMmaker('button', 'objOrderButton');
-    orderUpBtn.attr('key', key);
+    // orderUpBtn.attr('key', key);
     orderUpBtn.addClass('Up');
     orderUpBtn.text('▲');
-    $(orderUpBtn).click(()=>{
-        ObjectOrderAdd(-1, parentObj[key].order, key, nowRefPath, 'order');
-    })
+    // $(orderUpBtn).click(()=>{
+    //     ObjectOrderAdd(-1, parentObj[key].order, key, parentPath, orderPropName,
+    //         database, projectPath, projectObject);
+    // })
     let orderDownBtn = DOMmaker('button', 'objOrderButton');
-    orderDownBtn.attr('key', key);
+    // orderDownBtn.attr('key', key);
     orderDownBtn.addClass('Down');
     orderDownBtn.text('▼');
-    $(orderDownBtn).click(()=>{
-        ObjectOrderAdd(1, parentObj[key].order, key, nowRefPath, 'order');
-    })
-    let orderTxt = DOMmaker('div', 'objOrderTxt').attr('key', key);
-    orderTxt.text(parentObj[key].order);
+    // $(orderDownBtn).click(()=>{
+    //     ObjectOrderAdd(1, parentObj[key].order, key, parentPath, orderPropName,
+    //         database, projectPath, projectObject);
+    // })
+    let orderTxt = DOMmaker('div', 'objOrderTxt');
+    // orderTxt.text(parentObj[key].order);
+    orderTxt.text('0');
     orderDiv.append([orderUpBtn, orderTxt, orderDownBtn]);
     return orderDiv;
+}
+
+export function MakeEditDiv(key, objName, objTypes){
+    let editDiv = DOMmaker('div', 'objEditDiv');
+    // editDiv.attr('key', key);
+    let objEditBtn = DOMmaker('button', 'objEditButton');
+    objEditBtn.text('Edit');
+    let objCancelEditBtn = DOMmaker('button', 'objCancelEditButton');
+    objCancelEditBtn.text('Cancel');
+    let objSubmitBtn = DOMmaker('button', 'objSubmitButton');
+    objSubmitBtn.text('Submit');
+    let objDelBtn = DOMmaker('button', 'objDelButton');
+    objDelBtn.text('Delete');
+    editDiv.append([objEditBtn, objSubmitBtn, objCancelEditBtn, objDelBtn]);
+    if(objTypes !== undefined){
+        if(objTypes.length > 0){
+            let addDialogBelowSelect = makeDropdownWithStringArray(objTypes);
+            addDialogBelowSelect.addClass('objAddBelowSelect');
+            editDiv.append(addDialogBelowSelect);
+        }
+    }
+    let objAddBelowBtn = DOMmaker('button', 'objAddBelowBtn');
+    objAddBelowBtn.text('▼ Add ' + objName + ' below');
+    editDiv.append([objAddBelowBtn]);
+    return editDiv;
 }
 
 export function DisplayTitle(objName, objTypes) {

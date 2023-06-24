@@ -4,7 +4,8 @@ import { app, auth } from "/auth.js";
 import { DateToString, StringToDate, DateToStringTime,
     DateToStringDate } from "/StringTimeHelper.js"
 import{DisplayListObject, DisplayTitle, makeDropdownWithStringArray, DOMmaker} from "/ListDisplayer.js";
-import{ObjectOrderAdd, getDataByPath, updateObjMaker, batchUpdateDatabase, CheckObject, isObject}from "/DatabaseUtils.js"
+import{ObjectOrderAdd, getDataByPath, updateObjMaker, batchUpdateDatabase, CheckObject,
+    isObject, orderObjectKeysByProp, deleteDataWithOrder}from "/DatabaseUtils.js"
 
 auth.onAuthStateChanged(()=>{
     if(auth.currentUser){
@@ -33,6 +34,13 @@ var emptyDrama = {
     dramaOrder: "00",
     dateInStory: "2000-01-01 00:00",
     dialogues:{},
+}
+
+var emptyKey = {
+    type: "key",
+    name: "Empty Key",
+    order: 1,
+    description: "no description"
 }
 
 var emptyTalk = {
@@ -98,19 +106,12 @@ function DisplayData(){
 
     dataDiv.append([subjectsDiv, dataContentDiv]);
 
-
-    // tmpAddSubjectButton();
-    switch(currentSubject){
-        case "dramas":
-            DisplayDramas();
-            break;
-        case "characters":
-            break;
-        case "keys":
-            break;
-        default:
-            break;
+    if(subjectTypes.includes(currentSubject.substring(0, currentSubject.length - 1))){
+        DisplaySubject(currentSubject);
+    }else{
+        console.error(`沒有這種Subject: ${currentSubject}`);
     }
+    
     
 
 }
@@ -139,6 +140,10 @@ function tmpAddSubjectButton(){
         }
     });
     subjectsDiv.append([selectSubjectType, addSubBtn]);
+}
+
+function pushNewObject(parentRef, obj){
+    return set(push(ref(db, refProj + '/' + parentRef)), obj);
 }
 
 function DisplaySubject(sbjName){
@@ -180,9 +185,15 @@ function DisplayKeys(){
     var dataContentDiv = $('#dataContent')
     dataContentDiv.empty();
     
+    let parentPath = 'keys';
+    let parentObj = project[parentPath];
+    
     // let keysDivContainer = 
-    let keysDivContainer = DOMmaker('div', 'keysDivContainer');
-    let keysTitleContainer = DisplayTitle('Key');
+    let keysDivContainer = DisplayListObject(parentPath, 'key',
+        'order', project);
+    // let keysDivContainer = DisplayListObject(parentPath, 'key',
+    //     'order', db, refProj, project);
+    // let keysTitleContainer = DisplayTitle('Key');
     // let keysTitleContainer = DOMmaker('div', 'dialogTitle');
     // let keysTitle = DOMmaker('div', 'dialogTitleTxt').text('Keys');
     // let keysTitleSpace = $('<div>').addClass('fillSpace');
@@ -191,8 +202,13 @@ function DisplayKeys(){
     //
     // let keys = project['keys'];
     // keysTitleContainer.append([keysTitle, keysTitleSpace, keysTitleAddKeyBtn]);
-    keysDivContainer.append([keysTitleContainer]);
+    // keysDivContainer.append([keysTitleContainer]);
     dataContentDiv.append(keysDivContainer);
+    
+    let titleAddKeyBtn = keysDivContainer.find('.listTitleAddNewObjectButton');
+    titleAddKeyBtn.click(()=>{
+        addDataWithOrder(emptyKey, parentPath, 'order');
+    })
 }
 
 function DisplayDramas(){
@@ -252,12 +268,12 @@ async function showDramaContents(pagingDiv){
     let dramaOrder = $('<div>').text('Drama Order:').attr('id', 'dramaOrder').addClass('leftTitle');
     let dramaOrderUpButton = $('<button>').text('▲').addClass('left');
     dramaOrderUpButton.click(()=> {
-        ObjectOrderAdd(-1, data.dramaOrder, currentDramaKey, 'dramas', 'dramaOrder');
+        ObjectOrderAdd(-1, data.dramaOrder, currentDramaKey, 'dramas', 'dramaOrder', db, refProj, project);
     });
     let dramaOrderDisplay = $('<div>').text(data.dramaOrder).addClass('left');
     let dramaOrderDownButton = $('<button>').text('▼').addClass('left');
     dramaOrderDownButton.click(()=> {
-        ObjectOrderAdd(1, data.dramaOrder, currentDramaKey, 'dramas', 'dramaOrder');
+        ObjectOrderAdd(1, data.dramaOrder, currentDramaKey, 'dramas', 'dramaOrder', db, refProj, project);
     });
     let decodedDramaName = decodeURIComponent(data.dramaName);
     let dramaNameRow = $('<div>').addClass('rowParent');
@@ -368,7 +384,7 @@ async function showDramaContents(pagingDiv){
     //Add Dialog Div
     // let dialogDivContainer = 
     // let dialogDivContainer = DOMmaker('div', 'dialogDivContainer', 'listTitleDiv');
-    let dialogDivContainer = DOMmaker('div', 'dialogDivContainer', 'dialogDivContainer');
+    let dialogDivContainer = DOMmaker('div', 'objDivContainer','dialogDivContainer');
     // let addDialogDiv = DisplayTitle('Dialog', dialogTypes);
     let dialogTitle = DOMmaker('div', 'listTitleDiv');
     let dialogTitleTxt = $('<div>').text('Dialog').addClass('listTitleText');
@@ -449,21 +465,21 @@ async function DisplayDialogs(dialogDivContainer) {
     dialogKeys.forEach((key)=>{
         let nowRefPath = 'dramas/'+ currentDramaKey +'/dialogs';
         
-        let dialogDiv = DOMmaker('div', 'dialog').attr('key', key);
-        let orderDiv = DOMmaker('div', 'dialogOrderDiv').attr('key', key);
-        let orderUpBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
+        let dialogDiv = DOMmaker('div', 'objDiv').attr('key', key);
+        let orderDiv = DOMmaker('div', 'objOrderDiv').attr('key', key);
+        let orderUpBtn = DOMmaker('button', 'objOrderButton').attr('key', key);
         orderUpBtn.text('▲');
         $(orderUpBtn).click(()=>{
             ObjectOrderAdd(-1, dialogs[key].order, key, nowRefPath, 'order',
                 db, refProj, project);
         })
-        let orderDownBtn = DOMmaker('button', 'dialogOrderButton').attr('key', key);
+        let orderDownBtn = DOMmaker('button', 'objOrderButton').attr('key', key);
         orderDownBtn.text('▼');
         $(orderDownBtn).click(()=>{
             ObjectOrderAdd(1, dialogs[key].order, key, nowRefPath, 'order',
                 db, refProj, project);
         })
-        let orderTxt = DOMmaker('div', 'dialogOrderTxt').attr('key', key);
+        let orderTxt = DOMmaker('div', 'objOrderTxt').attr('key', key);
         orderTxt.text(dialogs[key].order);
         orderDiv.append([orderUpBtn, orderTxt, orderDownBtn]);
         dialogDiv.append(orderDiv);
@@ -847,7 +863,7 @@ async function DisplayDialogs(dialogDivContainer) {
         delDialogBtn.attr('order', dialogs[key].order);
         delDialogBtn.text('Delete');
         $(delDialogBtn).click(async function(){
-            await deleteDataWithOrder(key, 'order', nowRefPath);
+            await deleteDataWithOrder(key, 'order', nowRefPath, db, project, refProj);
         });
         let addDialogBelowSelect = makeDropdownWithStringArray(dialogTypes);
         addDialogBelowSelect.addClass('addDialogBelowSelect');
@@ -862,7 +878,8 @@ async function DisplayDialogs(dialogDivContainer) {
                 'order', dialogs[key].order + 1);
         });
         
-        editDiv.append([editDialogBtn, submitDialogBtn, cancelEditDialogBtn, delDialogBtn, addDialogBelowSelect, addDialogBelowBtn]);
+        editDiv.append([editDialogBtn, submitDialogBtn, cancelEditDialogBtn,
+            delDialogBtn, addDialogBelowSelect, addDialogBelowBtn]);
 
         dialogDiv.append([editDiv]);
         dialogDivContainer.append(dialogDiv);
@@ -902,8 +919,6 @@ function generateNewDialog(dialogType){
     }
     return dialogToAdd;
 }
-
-
 
 
 
@@ -997,7 +1012,7 @@ async function deleteDrama(key){
     if(closestDiv != null) {
         currentDramaKey = $(closestDiv).attr('data-key');
     }
-    await deleteDataWithOrder(key, 'dramaOrder', refDramas);
+    await deleteDataWithOrder(key, 'dramaOrder', refDramas, db, project, refProj);
 }
 
 async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
@@ -1044,39 +1059,7 @@ async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
     }
 }
 
-async function deleteDataWithOrder(key, orderPropName, parentRef){
-    let delObj = getDataByPath(parentRef + '/' + key, project);
-    if(isObject(delObj) === false){
-        throw new Error("要刪除的物件不是object，也可能是undefined或null");
-    }
-    let delObjOrder = parseInt(delObj[orderPropName], 10);
-    let parentObj = getDataByPath(parentRef, project);
-    if(isObject(parentObj)=== false){
-        throw new Error("parentRef不是指向object，也可能是undefined或null")
-    }
-    let objKeys = orderObjectKeysByProp(parentObj, orderPropName);
-    let updateList = [];
-    
-    for(let i = 0; i < objKeys.length; i++){
-        let objKey = objKeys[i];
-        let objOrder = parseInt(parentObj[objKey][orderPropName], 10);
-        if(objOrder > delObjOrder && objOrder !== i){
-            let updateValues = {[orderPropName]: i};
-            let updateObj = updateObjMaker(objKey, parentRef, updateValues, refProj);
-            updateList.push(updateObj);
-        }
-    }
-    let promises = [];
-    promises = promises.concat(updateList.map(item =>{
-        return update(ref(db, item.refPath), item.updateList);
-    }))
-    promises.push(remove(getRef(parentRef, key)));
-    try{
-        await Promise.all(promises);
-    }catch(error){
-        console.error(error);
-    }
-}
+
 
 function getRef(parentRef, key){
     if(parentRef === undefined){
@@ -1092,15 +1075,7 @@ function getRef(parentRef, key){
     return ref(db, refPath);
 }
 
-function orderObjectKeysByProp(parentObj, propName){
-    let objKeys = Object.keys(parentObj);
-    objKeys.sort((a, b)=>{
-        let aOrder = parseInt(parentObj[a][propName], 10);
-        let bOrder = parseInt(parentObj[b][propName], 10);
-        return aOrder - bOrder;
-    });
-    return objKeys;
-}
+
 
 
 
