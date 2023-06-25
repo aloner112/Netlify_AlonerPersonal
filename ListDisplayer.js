@@ -77,7 +77,7 @@ export function MakeEditDiv(key, objName, objTypes){
         }
     }
     let objAddBelowBtn = DOMmaker('button', 'objAddBelowBtn');
-    objAddBelowBtn.text('▼ Add ' + objName + ' below');
+    objAddBelowBtn.text('▼ Add ' + objName);
     editDiv.append([objAddBelowBtn]);
     return editDiv;
 }
