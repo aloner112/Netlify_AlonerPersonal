@@ -198,198 +198,80 @@ function DisplayCharacters(){
     
     let dataContent = $('#dataContent');
     dataContent.empty();
-    let tableContainer = $('<div>').addClass('tableContainer');
+    let listDivContainer = DOMmaker('div', 'listDivContainer');
     
     let parentRef = 'characters';
+    let objName = 'character';
     let orderProp = 'order';
     let parentObj = project[parentRef];
     let keys = orderObjectKeysByProp(parentObj, orderProp);
-    // console.log(`keys:\n${keys}`);
-    let MaxPhizCount = 0; 
-    keys.forEach(key=>{
-        if(parentObj[key].phiz !== undefined){
-            let phizCount = Object.keys(parentObj[key].phiz).length;
-            console.log(`phizCount = ${phizCount}`);
-            if(phizCount > MaxPhizCount){
-                MaxPhizCount = phizCount;
-            }            
-        }
+    
+    let langDiv = DOMmaker('div').css({
+        'display': 'flex'
     });
-    console.log(`MaxPhizCount = ${MaxPhizCount}`);
-    // let tableWH = [MaxPhizCount + 1, keys.length + 4];
-    let characterCount = keys.length;
-    let phizCount = MaxPhizCount;
-    let table = $('<table></table>').addClass('dataTable');
-    let tbody = $('<tbody></tbody>');
-    for (let y = 0; y < characterCount + 1; y++){
-        let tr = $('<tr></tr>');
-        
-        for(let x = 0; x < phizCount + 4; x++){
-            let td = $('<td></td>');
-            let th = $('<th></th>');
-            switch(x){
-                case 0: 
-                    if(y !== 0){
-                        let keyOrder = y-1;
-                        let nowKey = keys[keyOrder];
-                        if(nowKey !== undefined){
-                            let upBtn = DOMmaker('button', 'objOrderButton');
-                            upBtn.text('▲');
-                            let downBtn = DOMmaker('button', 'objOrderButton');
-                            downBtn.text('▼');
-                            let orderTxt = DOMmaker('div', 'objOrderTxt');
-                            orderTxt.text(parentObj[nowKey][orderProp]);
-                            td.append([upBtn, orderTxt, downBtn]);
-                            $(td).css({
-                                'margin':'0',
-                                'padding':'0',
-                                'width': '30px',
-                                'min-height': '100px',
-                                'display':'grid',
-                                'grid-template-rows': '1fr 1fr 1fr'
-                            })
-                        }
-                        td.addClass('sticky-one');
-                        td.addClass('objOrderDiv');
-                        tr.append(td);
-                    }else{
-                        // th.attr('id','hide');
-                        th.addClass('sticky-one');
-                        tr.append(th);
-                    }
-                    break;
-                case 1:
-                    if(y !== 0){
-                        let keyOrder = y-1;
-                        let nowKey = keys[keyOrder];
-                        if(nowKey !== undefined){
-                            td.text(decodeURIComponent(parentObj[nowKey].name));
-                        }
-                        td.addClass('sticky-two');
-                        td.addClass('characterName');
-                        tr.append(td);
-                    }else{
-                        // th.attr('id','hide');
-                        th.addClass('sticky-two');
-                        tr.append(th);
-                    }
-                    break;
-                case 2:
-                    if( y!== 0){
-                        td.addClass('characterDescription');
-                        let keyOrder = y-1;
-                        let nowKey = keys[keyOrder];
-                        if(nowKey !== undefined){
-                            let txt = parentObj[nowKey].description;
-                            txt = decodeURIComponent(txt);
-                            txt = txt.replace(/\n/g, '<br>');
-                            td.html(txt);
-                        }
-                        tr.append(td);
-                    }else{
-                        th.html('character<br>description');
-                        th.addClass('characterDescription');
-                        tr.append(th);
-                    }
-                    break;
-                case phizCount + 3:
-                    if(y !== 0){
-                        // td.text('edit td');
-                        let keyOrder = y-1;
-                        let nowKey = keys[keyOrder];
-                        if(nowKey !== undefined){
-                            let editDiv = MakeEditDiv(nowKey, 'character');
-                            $(editDiv).css({
-                                'height':'100%',
-                                'margin':'0',
-                                'padding':'0',
-                                'grid-template-columns': 'repeat(6 1fr)',
-                                'grid-template-rows': 'auto 2px auto',
-                                'grid-gap': '4px',
-                                'align-items': 'center'
-                            });
-                            td.append(editDiv);
-                            $(td).css({
-                                'min-width': '250px',
-                                'min-height':'100px',
-                                'margin':'0',
-                                'padding':'0'
-                            });
-                        }
-                        td.addClass('sticky-end');
-                        td.addClass('objEditDiv');
-                        tr.append(td);
-                    }else{
-                        // th.attr('id','hide');
-                        th.addClass('sticky-end');
-                        tr.append(th);
-                    }
-                    break;
-                default:
-                    if(y !== 0){
-                        let keyOrder = y-1;
-                        let nowKey = keys[keyOrder];
-                        if(nowKey!==undefined){
-                            let phizParent = parentObj[nowKey].phiz;
-                            if(phizParent === undefined){
-                                td.text('no phiz');
-                            }else{
-                                let phizTxt = 'no phiz';
-                                for(let thisPhiz in phizParent){
-                                    if(parseInt(phizParent[thisPhiz].order, 10) === x-2){
-                                        phizTxt = phizParent[thisPhiz].name;
-                                    }
-                                }
-                                td.text(phizTxt);
-                            }
-                        }else{
-                            td.text('no phiz');                            
-                        }
-                        // td.addClass('normalTd');
-                        tr.append(td);
-                    }else{
-                        th.text(PhizList[(x-3)]);
-                        tr.append(th);
-                    }
-                    break;
-            }
-            
-        }
-        if(y===0){
-            let thead = $('<thead></thead>').addClass('thead');
-            thead.append(tr);
-            table.append(thead);
-        }else{
-            tr.attr('key', keys[y]);
-            tbody.append(tr);
-        }
+    let langTxt = DOMmaker('div').text('Language:');
+    langTxt.css('margin-right', '10px');
+    let langSelect = makeDropdownWithStringArray(languages);
+    langSelect.attr('id', 'mainLanguageSelect');
+    if(typeof nowDramaLanguages[0] === 'string'){
+        langSelect.val(nowDramaLanguages[0]);
+    }else{
+        nowDramaLanguages[0] = languages[0];
+        langSelect.val(languages[0]);
     }
-    table.append(tbody);
-    tableContainer.append(table);
-    
-    let listDivContainer = DOMmaker('div', 'listDivContainer');
-    let titleDiv = DisplayTitle('character');
-    listDivContainer.append([titleDiv, tableContainer]);
-    dataContent.append(listDivContainer);
-    
-    
-    let addNewCharacterBtn = $('.listTitleAddNewObjectButton');
-    addNewCharacterBtn.click(async function(){
-        let newCharacter = Object.assign({}, emptyCharacter);
-        let phizObjs = {};
-        for(let i = 0; i < PhizList.length; i++){
-            let phiz = PhizList[i];
-            let phizObj = Object.assign({}, emptyPhiz);
-            phizObj.name = phiz;
-            phizObj.order = i + 1;
-            phizObjs[phiz] = phizObj;
-        }
-        newCharacter.phiz = phizObjs;
-        addDataWithOrder(newCharacter, parentRef, orderProp);
+    langSelect.change(()=>{
+        let objDivs = $('.objDiv');
+        let mainLang = $('#mainLanguageSelect').val();
+        let langNameKey = `name${mainLang}`;
+
+        objDivs.toArray().forEach(element=>{
+            let objDiv = $(element);
+            let key = objDiv.attr('key');
+            let langNameTitle = objDiv.find(`.txtInputTitle.Language`);
+            langNameTitle.text('Language ' +langNameKey + ':');
+            let langNameTxt = objDiv.find(`.objTxt.Language`);
+            let langName = project[parentRef][key][langNameKey];
+            langName = decodeURIComponent(langName);
+            langNameTxt.html(langName);
+        });
+       
+        nowDramaLanguages[0] = mainLang;
     });
+    langDiv.append(langTxt, langSelect);
+    listDivContainer.append(langDiv);
+    let characterList = DisplayListObject(parentRef, objName, orderProp, project);
+    
+    listDivContainer.append(characterList);
+    // let titleDiv = DisplayTitle(objName);
+    // listDivContainer.append([characterList]);
+    dataContent.append([listDivContainer]);
+    
     keys.forEach(key =>{
+        let obj = parentObj[key];
         
+        setOrderDiv(key, parentRef, orderProp, obj);
+        setEditDiv(key, parentRef, orderProp, obj);
+        
+        let objDiv = $(`.objDiv[key=${key}]`);
+        let objContentDiv = objDiv.find('.objContentDiv');
+        
+        let characterDiv = DOMmaker('div', 'characterDiv');
+        characterDiv.css({
+            'width':'150px',
+            'background-color':'#dddddd',
+        })
+        // characterDiv.text(obj.name);
+        
+        let characterField = makeEditableTxtField(obj, 'character', 'name', 'input');
+        let langNameKey = `name${nowDramaLanguages[0]}`;
+        let langNameField = makeEditableTxtField(obj, 'Language', langNameKey, 'input');
+        characterDiv.append(characterField, langNameField);
+        
+        objContentDiv.append([characterDiv]);
     });
+    
+    
+   
 }
 
 function DisplayKeys(){
@@ -401,8 +283,10 @@ function DisplayKeys(){
     let parentObj = project[parentPath];
     
     // let keysDivContainer = 
-    let keysDivContainer = DisplayListObject(parentPath, 'key',
+    let keyListElements = DisplayListObject(parentPath, 'key',
         orderPropName, project);
+    let keysDivContainer = $('<div>').addClass('listDivContainer');
+    keysDivContainer.append(keyListElements);
     dataContentDiv.append(keysDivContainer);
     
     let titleAddKeyBtn = keysDivContainer.find('.listTitleAddNewObjectButton');
@@ -510,9 +394,10 @@ function makeEditableTxtField(obj, itemName, valueKey, inputType) {
     let objNameTxt = DOMmaker('div', 'objTxt');
     let dataTxt = decodeURIComponent(obj[valueKey]);
     let dataTxtHtml = dataTxt.replace(/\n/g, '<br>');
-    objNameTxt.addClass(valueKey);
+    objNameTxt.addClass(itemName);
     objNameTxt.html(dataTxtHtml);
     let objNameInputTitle = DOMmaker('div', 'txtInputTitle');
+    objNameInputTitle.addClass(itemName);
     objNameInputTitle.text(itemName + ' ' +valueKey + ':');
     
     let className = '';

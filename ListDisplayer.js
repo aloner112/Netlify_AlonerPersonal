@@ -2,13 +2,11 @@
     CheckObject, isObject, deleteDataWithOrder}from "/DatabaseUtils.js"
 
 export function DisplayListObject(parentPath, objName, orderPropName, projectObject, objTypes ){
-    // let parentObject = getDataByPath(parentPath, projectObject);
-    let listDiv = $('<div>').addClass('listDivContainer');
+    // let listDiv = $('<div>').addClass('listDivContainer');
     let titleDiv = DisplayTitle(objName, objTypes);
-    // let ListDiv = $('<div>').addClass('listContainer');
     let objDivs = DisplayObjs(parentPath, objName, orderPropName, projectObject, objTypes);
-    listDiv.append([titleDiv, objDivs]);
-    return listDiv;
+    // listDiv.append([titleDiv, objDivs]);
+    return [titleDiv, objDivs];
 }
 
 function DisplayObjs(parentPath, objName, orderPropName, projectObject, objTypes) {

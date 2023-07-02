@@ -17,107 +17,6 @@ body{
     position: relative;
 }
 
-.tableContainer{
-    padding: 0;
-    background: #ffffff;
-    width: calc(100% - 2px);
-    height: calc(100vh - 300px);
-    box-shadow: 0 0 0 1px black;
-    border-collapse: collapse;
-    display: block;
-    overflow: auto;
-}
-
-table{
-    
-    box-sizing: border-box;
-    /*background-color: #f2f2f2;*/
-}
-
-thead tr th {    
-    position: sticky;
-    border-collapse: collapse;
-    box-shadow: 0 0 0 2px black;
-    box-sizing: border-box;
-    background-color: #f2f2f2;
-    min-width: 100px;
-    max-height: 10px;
-    top: 2px;
-    z-index: 1;
-}
-table tr td{
-    border-collapse: collapse;
-    box-shadow: 0 0 0 1px gray;
-    box-sizing: border-box;
-    background-color: #f2f2f2;
-    min-width: 10px;
-    min-height: 10px;
-    padding: 0;
-    margin: 0;
-    z-index: 0;
-}
-
-thead tr th.sticky-one{
-    position: sticky;
-    border-collapse: collapse;
-    min-width: 15px;
-    max-width: 15px;
-    box-shadow: 0 0 0 2px black;
-    left: 2px;
-    top: 2px;
-    z-index: 5;
-}
-thead tr th.sticky-two{
-    position: sticky;
-    border-collapse: collapse;
-    min-width: 150px;
-    max-width: 150px;
-    box-shadow: 0 0 0 2px black;
-    left: 34px;
-    top: 2px;
-    z-index: 6;
-}
-thead tr th.characterDescription{
-    min-width: 300px;
-    max-width: 300px;
-}
-thead tr th.sticky-end{
-    position: sticky;
-    border-collapse: collapse;
-    box-shadow: 0 0 0 2px black;
-    left: auto;
-    right: 2px;
-    top: 2px;
-    z-index: 5;
-}
-.sticky-one{
-    position: sticky;
-    box-shadow: 0 0 0 2px black;
-    min-width: 30px;
-    /*max-width: 40px;*/
-    border-collapse: collapse;
-    left:2px;
-    z-index: 2;
-}
-.sticky-two{
-    position: sticky;
-    border-collapse: collapse;
-    box-shadow: 0 0 0 2px black;
-    /*min-width: 100px;*/
-    /*max-width: 100px;*/
-    left: 34px;
-    z-index: 3;
-}
-.sticky-end{
-    position: sticky;
-    border-collapse: collapse;
-    box-shadow: 0 0 0 2px black;
-    left: auto;
-    right: 2px;
-    z-index: 2;
-}
-
-
 .fillSpace{
     flex-grow: 1;
 }
@@ -273,9 +172,9 @@ thead tr th.sticky-end{
 
 .txtInputTitle{
     display: block;
-    text-align: left;
+    text-align: center;
     align-items: end;
-    margin-left: 20px;
+    /*margin-left: 20px;*/
     margin-bottom: 0;
     font-family: 'Orbitron', sans-serif;
     font-weight: 600;
