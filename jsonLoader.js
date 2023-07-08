@@ -330,12 +330,19 @@ function DisplayKeys(){
 
 function setEditDiv(key, parentPath, orderPropName, obj) {
     let objDiv = $(`.objDiv[key=${key}]`);
+    
+    let languageControl = ['#showSubLanguageCheckBox',
+        '#subLanguageSelect', '#mainLanguageSelect'];
+    
     let editClasses = ['objTxt', 'txtInput', 'txtAreaInput',
         'objEditButton', 'objCancelEditButton', 'objSubmitButton', 'objDelButton'];
 
     let editDiv = objDiv.find('.objEditDiv');
     let editBtn = editDiv.find('.objEditButton');
     editBtn.click(() => {
+        languageControl.forEach(element =>{
+            $(element).prop('disabled', true);
+        })
         editClasses.forEach(className => {
             let editClassDivs = objDiv.find(`.${className}`);
             editClassDivs.addClass('editing');
@@ -343,6 +350,9 @@ function setEditDiv(key, parentPath, orderPropName, obj) {
     });
     let cancelBtn = objDiv.find('.objCancelEditButton');
     cancelBtn.click(() => {
+        languageControl.forEach(element =>{
+            $(element).prop('disabled', false);
+        })
         editClasses.forEach(className => {
             let editClassDivs = objDiv.find(`.${className}`);
             editClassDivs.removeClass('editing');
@@ -350,6 +360,9 @@ function setEditDiv(key, parentPath, orderPropName, obj) {
     })
     let submitBtn = objDiv.find('.objSubmitButton');
     submitBtn.click(async function () {
+        languageControl.forEach(element =>{
+            $(element).prop('disabled', false);
+        })
         editClasses.forEach(className => {
             let editClassDivs = objDiv.find(`.${className}`);
             editClassDivs.removeClass('editing');
