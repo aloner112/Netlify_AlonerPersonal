@@ -233,6 +233,9 @@ function DisplayCharacters(){
             let langName = project[parentRef][key][langNameKey];
             langName = decodeURIComponent(langName);
             langNameTxt.html(langName);
+            let langNameInput = objDiv.find(`.txtInput.Language`);
+            langNameInput.attr('valueKey', langNameKey);
+            langNameInput.val(langName);
         });
        
         nowDramaLanguages[0] = mainLang;
@@ -414,7 +417,7 @@ function makeEditableTxtField(obj, itemName, valueKey, inputType) {
     }
     let objNameInput = DOMmaker(inputType, className);
     objNameInput.attr('valueKey', valueKey);
-    objNameInput.addClass(valueKey);
+    objNameInput.addClass(itemName);
     objNameInput.val(dataTxt);
     return [objNameInputTitle, objNameTxt, objNameInput];
 }
