@@ -206,6 +206,9 @@ function DisplayCharacters(){
     let parentObj = project[parentRef];
     let keys = orderObjectKeysByProp(parentObj, orderProp);
     
+    let characterItemName = 'character';
+    let LangNameItemName = 'LangName';
+    
     let langDiv = DOMmaker('div').css({
         'display': 'flex'
     });
@@ -227,13 +230,16 @@ function DisplayCharacters(){
         objDivs.toArray().forEach(element=>{
             let objDiv = $(element);
             let key = objDiv.attr('key');
-            let langNameTitle = objDiv.find(`.txtInputTitle.Language`);
+            let langNameTitle = objDiv.find(`.txtInputTitle.${LangNameItemName}`);
+            // let langNameTitle = objDiv.find(`.txtInputTitle.Language`);
             langNameTitle.text('Language ' +langNameKey + ':');
-            let langNameTxt = objDiv.find(`.objTxt.Language`);
+            let langNameTxt = objDiv.find(`.objTxt.${LangNameItemName}`);
+            // let langNameTxt = objDiv.find(`.objTxt.Language`);
             let langName = project[parentRef][key][langNameKey];
             langName = decodeURIComponent(langName);
             langNameTxt.html(langName);
-            let langNameInput = objDiv.find(`.txtInput.Language`);
+            let langNameInput = objDiv.find(`.txtInput.${LangNameItemName}`);
+            // let langNameInput = objDiv.find(`.txtInput.Language`);
             langNameInput.attr('valueKey', langNameKey);
             langNameInput.val(langName);
         });
@@ -265,9 +271,10 @@ function DisplayCharacters(){
         })
         // characterDiv.text(obj.name);
         
-        let characterField = makeEditableTxtField(obj, 'character', 'name', 'input');
+        // let characterField = makeEditableTxtField(obj, 'character', 'name', 'input');
+        let characterField = makeEditableTxtField(obj, characterItemName, 'name', 'input');
         let langNameKey = `name${nowDramaLanguages[0]}`;
-        let langNameField = makeEditableTxtField(obj, 'Language', langNameKey, 'input');
+        let langNameField = makeEditableTxtField(obj, LangNameItemName, langNameKey, 'input');
         characterDiv.append(characterField, langNameField);
         
         objContentDiv.append([characterDiv]);
