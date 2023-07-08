@@ -269,15 +269,52 @@ function DisplayCharacters(){
             'width':'150px',
             'background-color':'#dddddd',
         })
-        // characterDiv.text(obj.name);
         
-        // let characterField = makeEditableTxtField(obj, 'character', 'name', 'input');
         let characterField = makeEditableTxtField(obj, characterItemName, 'name', 'input');
         let langNameKey = `name${nowDramaLanguages[0]}`;
         let langNameField = makeEditableTxtField(obj, LangNameItemName, langNameKey, 'input');
         characterDiv.append(characterField, langNameField);
         
-        objContentDiv.append([characterDiv]);
+        let newPhizDiv = DOMmaker('div', 'newPhizDiv');
+        newPhizDiv.css({
+            'width':'200px'
+        })
+        let imgPreview = DOMmaker('img', 'imgPreview');
+        imgPreview.attr('characterKey', key);
+        imgPreview.css({
+            'display':'block',
+            'max-width':'200px',
+            'max-height':'200px'
+        });
+        let imgInput = $('<input>').attr('type', 'file').attr('id', 'uploadImg');
+        imgInput.css({
+            'display':'block',
+            'max-width':'200px',
+        });
+        imgInput.on('change', function(){
+            let imgFile = this.files[0];
+            if(!imgFile){return;}
+            let fileReader = new FileReader();
+            fileReader.onload = function (e){
+                let imgPrev = $(`.imgPreview[characterKey=${key}]`);
+                imgPrev.attr('src', e.target.result);
+            }
+            fileReader.readAsDataURL(imgFile);
+        });
+        let phizNameTitle = DOMmaker('div', 'txtInputTitle');
+        phizNameTitle.text('Phiz Name:');
+        let phizNameInput = DOMmaker('input', 'phizNameInput');
+        phizNameInput.val('new Phiz');
+        let addNewPhizBtn = DOMmaker('button', 'uploadNewPhizImgBtn');
+        addNewPhizBtn.css({
+            'display':'block',
+            'margin-left':'25px',
+            'width': '150px'
+        });
+        addNewPhizBtn.text('Add New Phiz');
+        newPhizDiv.append([imgPreview, imgInput, phizNameTitle, phizNameInput, addNewPhizBtn]);
+        
+        objContentDiv.append([characterDiv, newPhizDiv]);
     });
     
     
