@@ -367,7 +367,6 @@ body{
 }
 .objEditButton{
     display: grid;
-    grid-column: 2 / 6;
     grid-row: 1;
     height: 25px;
     align-items: center;

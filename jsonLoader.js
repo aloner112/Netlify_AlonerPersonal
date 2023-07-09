@@ -333,7 +333,7 @@ function DisplayCharacters(){
         let phizNameTitle = DOMmaker('div', 'txtInputTitle');
         phizNameTitle.text('Phiz Name:');
         let newPhizNameInput = DOMmaker('input', 'newPhizNameInput');
-        newPhizNameInput.val('new Phiz');
+        newPhizNameInput.attr('placeholder', 'enter phiz name');
         let addNewPhizBtn = DOMmaker('button', 'uploadNewPhizImgBtn');
         addNewPhizBtn.prop('disabled', true);
         addNewPhizBtn.css({
