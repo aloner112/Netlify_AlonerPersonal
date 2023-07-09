@@ -140,6 +140,10 @@ export function isObject(target){
 }
 
 export function orderObjectKeysByProp(parentObj, propName){
+    if(parentObj === undefined){
+        console.log('parentObj is undefined');
+        return [];
+    }
     let objKeys = Object.keys(parentObj);
     objKeys.sort((a, b)=>{
         let aOrder = parseInt(parentObj[a][propName], 10);

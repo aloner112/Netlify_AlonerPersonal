@@ -1,5 +1,7 @@
 import {getDatabase, ref, set, get, child, onValue, update, remove, push, equalTo, runTransaction
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+import {getStorage, ref as storageRef, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
 import { app, auth } from "/auth.js";
 import { DateToString, StringToDate, DateToStringTime,
     DateToStringDate } from "/StringTimeHelper.js"
@@ -15,7 +17,10 @@ auth.onAuthStateChanged(()=>{
 });
 
 const db = getDatabase();
-const refProj = "projects/testProject01";
+const storage = getStorage();
+const projectName = 'testProject01';
+const refProj = `projects/${projectName}`;
+// const refProj = "projects/testProject01";
 const refDramas = "dramas";
 const dbRef = ref(db, refProj);
 var project = [];
@@ -195,13 +200,14 @@ function DisplaySubject(sbjName){
 function DisplayCharacters(){
     // let characters = project.characters;
     // let characterContentDiv = $('<div>').addClass('characterContent');
-    
+    currentSubject = 'characters';
     let dataContent = $('#dataContent');
     dataContent.empty();
     let listDivContainer = DOMmaker('div', 'listDivContainer');
     
     let parentRef = 'characters';
     let objName = 'character';
+    let phizFolderName = 'phiz';
     let orderProp = 'order';
     let parentObj = project[parentRef];
     let keys = orderObjectKeysByProp(parentObj, orderProp);
@@ -257,64 +263,165 @@ function DisplayCharacters(){
     
     keys.forEach(key =>{
         let obj = parentObj[key];
+        let characterName = obj.name;
         
         setOrderDiv(key, parentRef, orderProp, obj);
         setEditDiv(key, parentRef, orderProp, obj);
         
         let objDiv = $(`.objDiv[key=${key}]`);
+        objDiv.css({
+            'display':'grid', 
+            'grid-template-columns':'30px 150px 200px calc( 100vw - 730px) 200px'
+            // 'grid-template-columns':'30px 150px 200px calc( 100vw - 580px) 200px'
+        });
+        let editDiv = objDiv.find('.objEditDiv');
+        editDiv.css({
+            'grid-column': '5 / 6'
+        });
         let objContentDiv = objDiv.find('.objContentDiv');
+        objContentDiv.css({
+            'grid-column': '2 / 5'
+        });
         
         let characterDiv = DOMmaker('div', 'characterDiv');
         characterDiv.css({
             'width':'150px',
+            'min-width':'150px',
             'background-color':'#dddddd',
+            'grid-column': '1 / 2'
         })
         
         let characterField = makeEditableTxtField(obj, characterItemName, 'name', 'input');
         let langNameKey = `name${nowDramaLanguages[0]}`;
         let langNameField = makeEditableTxtField(obj, LangNameItemName, langNameKey, 'input');
         characterDiv.append(characterField, langNameField);
-        
+
+        //new phiz div
         let newPhizDiv = DOMmaker('div', 'newPhizDiv');
         newPhizDiv.css({
-            'width':'200px'
+            'grid-column': '2 / 3'
         })
         let imgPreview = DOMmaker('img', 'imgPreview');
         imgPreview.attr('characterKey', key);
         imgPreview.css({
-            'display':'block',
-            'max-width':'200px',
-            'max-height':'200px'
+            'display': 'block',
+            'max-width': '200px',
+            'max-height': '200px'
         });
         let imgInput = $('<input>').attr('type', 'file').attr('id', 'uploadImg');
+        imgInput.addClass('uploadImg');
         imgInput.css({
-            'display':'block',
-            'max-width':'200px',
+            'display': 'block',
+            'max-width': '200px',
         });
-        imgInput.on('change', function(){
+        imgInput.on('change', function () {
             let imgFile = this.files[0];
-            if(!imgFile){return;}
+            if (!imgFile) {
+                return;
+            }
             let fileReader = new FileReader();
-            fileReader.onload = function (e){
-                let imgPrev = $(`.imgPreview[characterKey=${key}]`);
+            let parentDiv = $(`.objDiv[key=${key}]`);
+            fileReader.onload = function (e) {
+                let imgPrev = parentDiv.find('.imgPreview');
+                // let imgPrev = $(`.imgPreview[characterKey=${key}]`);
                 imgPrev.attr('src', e.target.result);
             }
             fileReader.readAsDataURL(imgFile);
+            let addButton = parentDiv.find('.uploadNewPhizImgBtn');
+            addButton.prop('disabled', false);
         });
         let phizNameTitle = DOMmaker('div', 'txtInputTitle');
         phizNameTitle.text('Phiz Name:');
-        let phizNameInput = DOMmaker('input', 'phizNameInput');
-        phizNameInput.val('new Phiz');
+        let newPhizNameInput = DOMmaker('input', 'newPhizNameInput');
+        newPhizNameInput.val('new Phiz');
         let addNewPhizBtn = DOMmaker('button', 'uploadNewPhizImgBtn');
+        addNewPhizBtn.prop('disabled', true);
         addNewPhizBtn.css({
-            'display':'block',
-            'margin-left':'25px',
+            'display': 'block',
+            'margin-left': '25px',
             'width': '150px'
         });
         addNewPhizBtn.text('Add New Phiz');
-        newPhizDiv.append([imgPreview, imgInput, phizNameTitle, phizNameInput, addNewPhizBtn]);
+        addNewPhizBtn.click(async function () {
+            function getFileExtension(fileName) {
+                return fileName.split('.').pop();
+            }
+
+            let parentDiv = $(`.objDiv[key=${key}]`);
+            let fileInput = parentDiv.find('.uploadImg');
+            console.log(`fileInput is undefined? ${fileInput === undefined}`);
+            let newPhizName = parentDiv.find('.newPhizNameInput').val();
+            newPhizName = encodeURIComponent(newPhizName);
+            let imgFile = fileInput.prop('files')[0];
+            let imgExt = getFileExtension(imgFile.name);
+            let imgPath = `${refProj}/${parentRef}/${characterName}/${phizFolderName}/${newPhizName}.${imgExt}`;
+            let imgRef = storageRef(storage, imgPath);
+            await uploadBytes(imgRef, imgFile);
+            let imgURL = await getDownloadURL(imgRef);
+            console.log(`imgURL = ${imgURL}`);
+            let phizObj = {
+                name: newPhizName,
+                url: imgURL
+            }
+            let phizRef = `${parentRef}/${key}/${phizFolderName}`;
+            await addDataWithOrder(phizObj, phizRef, orderProp);
+        })
+        newPhizDiv.append([imgPreview, imgInput, phizNameTitle, newPhizNameInput, addNewPhizBtn]);
         
-        objContentDiv.append([characterDiv, newPhizDiv]);
+        //phiz list
+        let phizListDiv = DOMmaker('div', 'phizListDiv');
+        phizListDiv.css({
+            'flex-grow':'1',
+            'overflow-x':'scroll'
+        })
+        let phizListInnerDiv = DOMmaker('div', 'phizListInnerDiv');
+        phizListInnerDiv.css({
+            'display':'flex',
+            'flex-direction':'row'
+        });
+        let phizKeys = orderObjectKeysByProp(obj[phizFolderName], orderProp);
+        phizKeys.forEach(phizKey =>{
+            let phizDiv = DOMmaker('div', 'phizDiv');
+            phizDiv.css({
+                'display':'block'
+            });
+            let phizObj = obj[phizFolderName][phizKey];
+            
+            let phizOrderDiv = DOMmaker('div', 'phizOrderDiv');
+            phizOrderDiv.css({
+                'display':'grid',
+                'grid-template-columns':'1fr 30px 2px 30px 2px 30px 1fr'
+            });
+            let phizOrderBtnL = DOMmaker('button', 'phizOrderBtnL');
+            phizOrderBtnL.css({
+                'grid-column': '2 / 3'
+            });
+            phizOrderBtnL.text('◀');
+            let phizOrderTxt = DOMmaker('div', 'phizOrderTxt');
+            phizOrderTxt.css({
+                'grid-column': '4 / 5'
+            });
+            phizOrderTxt.text(phizObj[orderProp]);
+            let phizOrderBtnR = DOMmaker('button', 'phizOrderBtnR');
+            phizOrderBtnR.css({
+                'grid-column': '6 / 7'
+            });
+            phizOrderBtnR.text('▶');
+            phizOrderDiv.append([phizOrderBtnL, phizOrderTxt, phizOrderBtnR]);
+            
+            let phizImg = $('<img>').attr('src', phizObj.url);
+            phizImg.css({
+                'max-width':'200px',
+                'max-height':'200px'
+            });
+            let phizName = DOMmaker('div', 'phizName');
+            phizName.text(decodeURIComponent(phizObj.name));
+
+            phizDiv.append([phizOrderDiv, phizImg, phizName]);
+            phizListInnerDiv.append(phizDiv);
+        });
+        phizListDiv.append(phizListInnerDiv);
+        objContentDiv.append([characterDiv, newPhizDiv, phizListDiv]);
     });
     
     
