@@ -346,7 +346,7 @@ function DisplayCharacters(){
             'display': 'block',
             'max-width': '200px',
         });
-        imgInput.on('change', function () {
+        imgInput.on('input', function () {
             let imgFile = this.files[0];
             if (!imgFile) {
                 return;
@@ -359,13 +359,112 @@ function DisplayCharacters(){
                 imgPrev.attr('src', e.target.result);
             }
             fileReader.readAsDataURL(imgFile);
-            let addButton = parentDiv.find('.uploadNewPhizImgBtn');
-            addButton.prop('disabled', false);
+            checkNewPhiz(key);
+            // let addButton = parentDiv.find('.uploadNewPhizImgBtn');
+            // addButton.prop('disabled', false);
         });
         let phizNameTitle = DOMmaker('div', 'txtInputTitle');
         phizNameTitle.text('Phiz Name:');
         let newPhizNameInput = DOMmaker('input', 'newPhizNameInput');
         newPhizNameInput.attr('placeholder', 'enter phiz name');
+        newPhizNameInput.on('input', function(){
+            checkNewPhiz(key);
+            // let value = $(this).val();
+            // let phizKeys = orderObjectKeysByProp(obj[phizFolderName], orderProp);
+            // if(phizKeys === []){
+            //     return;}
+            // let phizNames = [];
+            // phizKeys.forEach(phizKey =>{
+            //     phizNames.push(obj[phizFolderName][phizKey]['name']);
+            // });
+            // console.log(`phizNames: ${phizNames}`);
+            // let newPhizErrorText = $(`.objDiv[key=${key}]`).find('.txtPhizError');
+            // if(phizNames.includes(value)){
+            //     newPhizErrorText.css('display', 'block')
+            //     newPhizErrorText.text(`phiz name '${value}' already exist`);
+            // }else{
+            //     if(value !== ''){
+            //         newPhizErrorText.css('display', 'none');
+            //         newPhizErrorText.text('');
+            //     }else{
+            //         newPhizErrorText.css('display', 'block');
+            //         newPhizErrorText.text('phiz name empty');
+            //     }
+            // }
+        });
+        function checkNewPhizName(characterKey){
+            let objDiv = $(`.objDiv[key=${characterKey}]`);
+            let value = objDiv.find('.newPhizNameInput').val();
+            let phizKeys = orderObjectKeysByProp(obj[phizFolderName], orderProp);
+            if(phizKeys === []){
+                return '';}
+            let phizNames = [];
+            phizKeys.forEach(phizKey =>{
+                phizNames.push(obj[phizFolderName][phizKey]['name']);
+            });
+            console.log(`value: ${value}`);
+            // let newPhizErrorText = objDiv.find('.txtPhizError');
+            if(phizNames.includes(value)){
+                // newPhizErrorText.css('display', 'block')
+                // newPhizErrorText.text(`phiz name '${value}' already exist`);
+                return `phiz name '${value}' already exist`;
+            }else{
+                if(value !== ''){
+                    // newPhizErrorText.css('display', 'none');
+                    // newPhizErrorText.text('');
+                    return '';
+                }else{
+                    // newPhizErrorText.css('display', 'block');
+                    // newPhizErrorText.text('phiz name empty');
+                    return 'phiz name empty';
+                }
+            }
+        }
+        function checkNewPhizImg(characterKey){
+            let objDiv = $(`.objDiv[key=${characterKey}]`);
+            let imgInput = objDiv.find('#uploadImg')[0];
+            let file = imgInput.files[0];
+            if(!file){
+                return 'no file selected';
+            }
+            return '';
+        }
+        function checkNewPhiz(characterKey){
+            let objDiv = $(`.objDiv[key=${characterKey}]`);
+            let txtErr = objDiv.find('.txtPhizError');
+            let addBtn = objDiv.find('.uploadNewPhizImgBtn');
+            addBtn.prop('disabled', true);
+            let checkName = checkNewPhizName(characterKey);
+            let checkImg = checkNewPhizImg(characterKey);
+            txtErr.css({
+                'color':'red',
+                'display':'block'
+            });
+            if(checkImg === ''){
+                if(checkName === ''){
+                    txtErr.css('display', 'none');
+                    txtErr.text= '';
+                    addBtn.prop('disabled', false);
+                }else{
+                    txtErr.text(checkName);
+                }
+            }else{
+                if(checkName === ''){
+                    txtErr.text(checkImg);
+                }else{
+                    txtErr.html(checkImg + '<br>' + checkName);
+                }
+            }
+            
+        }
+        
+        
+        let newPhizErrorText = DOMmaker('div', 'txtPhizError');
+        newPhizErrorText.css({
+            'color':'red',
+            'display':'block'
+        });
+        newPhizErrorText.text('phiz name empty');
         let addNewPhizBtn = DOMmaker('button', 'uploadNewPhizImgBtn');
         addNewPhizBtn.prop('disabled', true);
         addNewPhizBtn.css({
@@ -398,7 +497,7 @@ function DisplayCharacters(){
             let phizRef = `${parentRef}/${key}/${phizFolderName}`;
             await addDataWithOrder(phizObj, phizRef, orderProp);
         })
-        newPhizDiv.append([imgPreview, imgInput, phizNameTitle, newPhizNameInput, addNewPhizBtn]);
+        newPhizDiv.append([imgPreview, imgInput, phizNameTitle, newPhizNameInput, newPhizErrorText, addNewPhizBtn]);
         
         //phiz list
         let phizListDiv = DOMmaker('div', 'phizListDiv');
@@ -411,6 +510,7 @@ function DisplayCharacters(){
             'display':'flex',
             'flex-direction':'row'
         });
+
         let phizKeys = orderObjectKeysByProp(obj[phizFolderName], orderProp);
         phizKeys.forEach(phizKey =>{
             let phizDiv = DOMmaker('div', 'phizDiv');
