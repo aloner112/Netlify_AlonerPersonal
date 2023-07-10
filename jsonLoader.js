@@ -200,7 +200,6 @@ function DisplaySubject(sbjName){
 function DisplayCharacters(){
     // let characters = project.characters;
     // let characterContentDiv = $('<div>').addClass('characterContent');
-    currentSubject = 'characters';
     let dataContent = $('#dataContent');
     dataContent.empty();
     let listDivContainer = DOMmaker('div', 'listDivContainer');
@@ -276,7 +275,40 @@ function DisplayCharacters(){
         });
         let editDiv = objDiv.find('.objEditDiv');
         editDiv.css({
-            'grid-column': '5 / 6'
+            'grid-column': '5 / 6',
+            'display':'grid',
+            'grid-template-rows':'5px 30px 30px 30px 30px 5px'
+        });
+        let editBtn = objDiv.find('.objEditButton');
+        editBtn.css({
+            'box-sizing':'content-box',
+            'grid-column': '2/6',
+            'grid-row':'2'
+        });
+        let delBtn = objDiv.find('.objDelButton');
+        delBtn.css({
+            'background-color':'red',
+            'box-sizing':'content-box',
+            'grid-column': '2/6',
+            'grid-row':'4'
+        });
+        let objSubmitBtn = objDiv.find('.objSubmitButton');
+        objSubmitBtn.css({
+            'box-sizing':'content-box',
+            'grid-column': '2/6',
+            'grid-row':'3'
+        });
+        let cancelBtn = objDiv.find('.objCancelEditButton');
+        cancelBtn.css({
+            'box-sizing':'content-box',
+            'grid-column': '2/6',
+            'grid-row':'2'
+        });
+        let addBelowBtn = objDiv.find('.objAddBelowBtn');
+        addBelowBtn.css({
+            'box-sizing':'content-box',
+            'grid-column': '2/6',
+            'grid-row':'5 / 6'
         });
         let objContentDiv = objDiv.find('.objContentDiv');
         objContentDiv.css({
