@@ -518,6 +518,7 @@ function DisplayCharacters(){
                 'display':'block'
             });
             let phizObj = obj[phizFolderName][phizKey];
+            let phizRef = `${parentRef}/${key}/${phizFolderName}`;
             
             let phizOrderDiv = DOMmaker('div', 'phizOrderDiv');
             phizOrderDiv.css({
@@ -529,6 +530,10 @@ function DisplayCharacters(){
                 'grid-column': '2 / 3'
             });
             phizOrderBtnL.text('◀');
+            phizOrderBtnL.click(async function(){
+               ObjectOrderAdd(-1, phizObj[orderProp], phizKey,
+                   phizRef, orderProp, db, refProj, project); 
+            });
             let phizOrderTxt = DOMmaker('div', 'phizOrderTxt');
             phizOrderTxt.css({
                 'grid-column': '4 / 5'
@@ -539,6 +544,10 @@ function DisplayCharacters(){
                 'grid-column': '6 / 7'
             });
             phizOrderBtnR.text('▶');
+            phizOrderBtnR.click(async function(){
+                ObjectOrderAdd(1, phizObj[orderProp], phizKey,
+                    phizRef, orderProp, db, refProj, project);
+            });
             phizOrderDiv.append([phizOrderBtnL, phizOrderTxt, phizOrderBtnR]);
             
             let phizImg = $('<img>').attr('src', phizObj.url);
