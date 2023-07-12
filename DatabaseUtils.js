@@ -141,7 +141,8 @@ export function isObject(target){
 
 export function orderObjectKeysByProp(parentObj, propName){
     if(parentObj === undefined){
-        console.log('parentObj is undefined');
+        //讀取character時如果有角色沒有表情時會觸發，但不會影響運作
+        console.log(`parentObj is undefined`);
         return [];
     }
     let objKeys = Object.keys(parentObj);

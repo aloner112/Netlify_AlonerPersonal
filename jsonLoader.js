@@ -369,28 +369,6 @@ function DisplayCharacters(){
         newPhizNameInput.attr('placeholder', 'enter phiz name');
         newPhizNameInput.on('input', function(){
             checkNewPhiz(key);
-            // let value = $(this).val();
-            // let phizKeys = orderObjectKeysByProp(obj[phizFolderName], orderProp);
-            // if(phizKeys === []){
-            //     return;}
-            // let phizNames = [];
-            // phizKeys.forEach(phizKey =>{
-            //     phizNames.push(obj[phizFolderName][phizKey]['name']);
-            // });
-            // console.log(`phizNames: ${phizNames}`);
-            // let newPhizErrorText = $(`.objDiv[key=${key}]`).find('.txtPhizError');
-            // if(phizNames.includes(value)){
-            //     newPhizErrorText.css('display', 'block')
-            //     newPhizErrorText.text(`phiz name '${value}' already exist`);
-            // }else{
-            //     if(value !== ''){
-            //         newPhizErrorText.css('display', 'none');
-            //         newPhizErrorText.text('');
-            //     }else{
-            //         newPhizErrorText.css('display', 'block');
-            //         newPhizErrorText.text('phiz name empty');
-            //     }
-            // }
         });
         function checkNewPhizName(characterKey){
             let objDiv = $(`.objDiv[key=${characterKey}]`);
@@ -403,19 +381,12 @@ function DisplayCharacters(){
                 phizNames.push(obj[phizFolderName][phizKey]['name']);
             });
             console.log(`value: ${value}`);
-            // let newPhizErrorText = objDiv.find('.txtPhizError');
             if(phizNames.includes(value)){
-                // newPhizErrorText.css('display', 'block')
-                // newPhizErrorText.text(`phiz name '${value}' already exist`);
                 return `phiz name '${value}' already exist`;
             }else{
                 if(value !== ''){
-                    // newPhizErrorText.css('display', 'none');
-                    // newPhizErrorText.text('');
                     return '';
                 }else{
-                    // newPhizErrorText.css('display', 'block');
-                    // newPhizErrorText.text('phiz name empty');
                     return 'phiz name empty';
                 }
             }
@@ -474,10 +445,6 @@ function DisplayCharacters(){
         });
         addNewPhizBtn.text('Add New Phiz');
         addNewPhizBtn.click(async function () {
-            function getFileExtension(fileName) {
-                return fileName.split('.').pop();
-            }
-
             let parentDiv = $(`.objDiv[key=${key}]`);
             let fileInput = parentDiv.find('.uploadImg');
             console.log(`fileInput is undefined? ${fileInput === undefined}`);
@@ -514,6 +481,7 @@ function DisplayCharacters(){
         let phizKeys = orderObjectKeysByProp(obj[phizFolderName], orderProp);
         phizKeys.forEach(phizKey =>{
             let phizDiv = DOMmaker('div', 'phizDiv');
+            phizDiv.attr('key', phizKey);
             phizDiv.css({
                 'display':'block'
             });
@@ -555,10 +523,92 @@ function DisplayCharacters(){
                 'max-width':'200px',
                 'max-height':'200px'
             });
-            let phizName = DOMmaker('div', 'phizName');
-            phizName.text(decodeURIComponent(phizObj.name));
+            
+            let modifyPhizNameClasses = ['.phizNameTxt', '.phizNameInput',
+            '.modifyPhizNameBtn', '.submitModifyPhizNameBtn', '.cancelModifyPhizNameBtn'];
+            function getModifyPhizNameDOMs(){
+                let thisPhizDiv = $(`.phizDiv[key=${phizKey}]`);
+                let DOMs = [];
+                modifyPhizNameClasses.forEach(className=>{
+                    DOMs.push(thisPhizDiv.find(className));
+                });
+                return DOMs;
+            }
+            
+            let phizNameDiv = DOMmaker('div', 'phizNameDiv');
+            let phizNameTxt = DOMmaker('div', 'phizNameTxt');
+            phizNameTxt.text(decodeURIComponent(phizObj.name));
+            let phizNameInput = DOMmaker('input', 'phizNameInput');
+            phizNameInput.val(decodeURIComponent(phizObj.name));
+            phizNameDiv.append([phizNameTxt, phizNameInput]);
+            
+            let modifyPhizNameDiv = DOMmaker('div', 'modifyPhizNameDiv');
+            let modifyPhizNameBtn = DOMmaker('button', 'modifyPhizNameBtn');
+            modifyPhizNameBtn.text('Edit Phiz Name');
+            modifyPhizNameBtn.click(()=>{
+                let DOMs = getModifyPhizNameDOMs();
+                DOMs.forEach(dom=>{
+                    dom.addClass('editing');
+                });
+            });
+            let submitModifyPhizNameBtn = DOMmaker('button', 'submitModifyPhizNameBtn');
+            submitModifyPhizNameBtn.text('Submit');
+            submitModifyPhizNameBtn.click(async function(){
+                let DOMs = getModifyPhizNameDOMs();
+                DOMs.forEach(dom=>{
+                    dom.removeClass('editing');
+                });
+                let parentRefPath = `${parentRef}/${key}/${phizFolderName}`;
+                let thisPhizObj = project[parentRef][key][phizFolderName][phizKey];
+                let nowPhizName = thisPhizObj.name;
+                let newPhizName = $(`.phizDiv[key=${phizKey}]`).find('.phizNameInput').val();
+                let updateValue = {};
+                if(nowPhizName === newPhizName){return}
+                if(nowPhizName === ''){return}
+                updateValue['name'] = newPhizName;
+                let updateObj = updateObjMaker(phizKey, parentRefPath, updateValue, refProj);
+                let promises = await batchUpdateDatabase([updateObj], db);
+                try{
+                    await Promise.all(promises);
+                }catch(error){
+                    console.error(error);
+                }
+                // console.log(`newPhizName: ${newPhizName}`);
+            });
+            let cancelModifyPhizNameBtn = DOMmaker('button', 'cancelModifyPhizNameBtn');
+            cancelModifyPhizNameBtn.text('Cancel');
+            cancelModifyPhizNameBtn.click(()=>{
+                let DOMs = getModifyPhizNameDOMs();
+                DOMs.forEach(dom=>{
+                    dom.removeClass('editing');
+                });
+            });
+            let btnDiv1 = DOMmaker('div', 'btnDiv1');
+            btnDiv1.css({
+                'overflow':'hidden',
+                'text-align': 'center',
+                'grid-column': '2/3'
+            });
+            let btnDiv2 = DOMmaker('div', 'btnDiv2');
+            btnDiv2.css({
+                'overflow':'hidden',
+                'text-align': 'center',
+                'grid-column': '4/5'
+            });
+            btnDiv1.append(submitModifyPhizNameBtn);
+            btnDiv2.append(cancelModifyPhizNameBtn);
+            
+            modifyPhizNameDiv.append([modifyPhizNameBtn, btnDiv1, btnDiv2]);
+            
+            let delPhizBtn = DOMmaker('button', 'editContentBtn');
+            delPhizBtn.addClass('delPhiz');
+            delPhizBtn.text('Delete');
+            delPhizBtn.click(async function(){
+               deleteDataWithOrder(phizKey, orderProp, phizRef, db, project, refProj); 
+            });
 
-            phizDiv.append([phizOrderDiv, phizImg, phizName]);
+            phizDiv.append([phizOrderDiv, phizImg, phizNameDiv, modifyPhizNameDiv]);
+            phizDiv.append(delPhizBtn);
             phizListInnerDiv.append(phizDiv);
         });
         phizListDiv.append(phizListInnerDiv);
@@ -1634,6 +1684,10 @@ function getTypeKeysInJson(dataObj, targetType){
     let tmpDramaKeys = Object.keys(dataObj).filter(
         key => dataObj[key].type == targetType);
     return tmpDramaKeys;
+}
+
+function getFileExtension(fileName) {
+    return fileName.split('.').pop();
 }
 
 // function makeDropdownWithStringArray(array){

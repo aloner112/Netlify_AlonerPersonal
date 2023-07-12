@@ -61,6 +61,58 @@ body{
 
 }
 
+.phizNameDiv{
+    display: inline-block;
+}
+.phizNameTxt{
+    display: block;
+}
+.phizNameTxt.editing{
+    display: none;
+}
+.phizNameInput{
+    display: none;
+}
+.phizNameInput.editing{
+    display: inline-block;
+    box-sizing: border-box;
+    width: 100%;
+}
+.modifyPhizNameDiv{
+    display: grid;
+    box-sizing: border-box;
+    grid-template-columns: 2px 1fr 2px 1fr 2px;
+}
+.modifyPhizNameBtn{
+    display: block;
+    text-align: center;
+    grid-column: 2/5;
+}
+.modifyPhizNameBtn.editing{
+    display: none;
+    box-sizing: border-box;
+    text-align: center;
+    grid-column: 2/5;
+}
+.submitModifyPhizNameBtn{
+    display: none;
+    grid-column: 2/3;
+}
+.submitModifyPhizNameBtn.editing{
+    display: inline-block;
+    max-width: 100%;
+    grid-column: 2/3;
+}
+.cancelModifyPhizNameBtn{
+    display: none;
+    grid-column: 4/5;
+}
+.cancelModifyPhizNameBtn.editing{
+    display: inline-block;
+    max-width: 100%;
+    grid-column: 4/5;
+}
+
 .keysDivContainer{
     display: block;
     width: 100%;
@@ -204,6 +256,10 @@ body{
     justify-self: center;
     width: calc(100% - 42px);
     resize: none;
+}
+.editContentBtn{
+    display: inline-block;
+    background-color: red;
 }
 
 .dialogSpeakerDiv{
@@ -367,6 +423,7 @@ body{
 }
 .objEditButton{
     display: grid;
+    grid-column: 2/6;
     grid-row: 1;
     height: 25px;
     align-items: center;
