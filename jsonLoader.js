@@ -197,6 +197,14 @@ function DisplaySubject(sbjName){
 
 }
 
+async function tryPromises(promises) {
+    try {
+        await Promise.all(promises);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 function DisplayCharacters(){
     // let characters = project.characters;
     // let characterContentDiv = $('<div>').addClass('characterContent');
@@ -272,45 +280,7 @@ function DisplayCharacters(){
         objDiv.css({
             'display':'grid', 
             'grid-template-columns':'30px 150px 200px calc( 100vw - 530px)'
-            // 'grid-template-columns':'30px 150px 200px calc( 100vw - 580px) 200px'
         });
-        // let editDiv = objDiv.find('.objEditDiv');
-        // editDiv.css({
-        //     'grid-column': '5 / 6',
-        //     'display':'grid',
-        //     'grid-template-rows':'5px 30px 30px 30px 30px 5px'
-        // });
-        // let editBtn = objDiv.find('.objEditButton');
-        // editBtn.css({
-        //     'box-sizing':'content-box',
-        //     'grid-column': '2/6',
-        //     'grid-row':'2'
-        // });
-        // let delBtn = objDiv.find('.objDelButton');
-        // delBtn.css({
-        //     'background-color':'red',
-        //     'box-sizing':'content-box',
-        //     'grid-column': '2/6',
-        //     'grid-row':'4'
-        // });
-        // let objSubmitBtn = objDiv.find('.objSubmitButton');
-        // objSubmitBtn.css({
-        //     'box-sizing':'content-box',
-        //     'grid-column': '2/6',
-        //     'grid-row':'3'
-        // });
-        // let cancelBtn = objDiv.find('.objCancelEditButton');
-        // cancelBtn.css({
-        //     'box-sizing':'content-box',
-        //     'grid-column': '2/6',
-        //     'grid-row':'2'
-        // });
-        // let addBelowBtn = objDiv.find('.objAddBelowBtn');
-        // addBelowBtn.css({
-        //     'box-sizing':'content-box',
-        //     'grid-column': '2/6',
-        //     'grid-row':'5 / 6'
-        // });
         let objContentDiv = objDiv.find('.objContentDiv');
         objContentDiv.css({
             'grid-column': '2 / 5'
@@ -334,7 +304,8 @@ function DisplayCharacters(){
             'max-width':'150px',
             'grid-template-columns':'4px 69px 4px 69px 4px'            
         })
-        let editChaClasses = ['submitChaNameBtn', 'cancelChaNameBtn', 'editChaNameBtn'];
+        let editChaClasses = ['submitChaNameBtn', 'cancelChaNameBtn',
+            'editChaNameBtn', characterItemName, LangNameItemName];
         function ChaClassesAddEditing(){
             editChaClasses.forEach(thisClass=>{
                 $(`.objDiv[key=${key}]`).find(`.${thisClass}`).addClass('editing');
@@ -350,6 +321,27 @@ function DisplayCharacters(){
         let submitChaNameBtn = DOMmaker('button', 'submitChaNameBtn');
         submitChaNameBtn.click(async function(){
             ChaClassesRemoveEditing();
+            let chaNameKey = 'name';
+            let langNameKey = `name${nowDramaLanguages[0]}`;
+            let nowChaName = obj[chaNameKey];
+            let nowLangName = obj[langNameKey];
+            let parentDiv = $(`.objDiv[key=${key}]`)
+            let newChaName = parentDiv.find(`.txtInput[valueKey=${chaNameKey}]`).val();
+            let newLangName = parentDiv.find(`.txtInput[valueKey=${langNameKey}]`).val();
+            let chaValue = {};
+            if(nowChaName !== newChaName){
+                if(newChaName !== ''){
+                    chaValue[chaNameKey] = newChaName;                    
+                }
+            }
+            if(nowLangName !== newLangName){
+                if(newLangName!== ''){
+                    chaValue[langNameKey] = newLangName;
+                }
+            }
+            let updateObj = updateObjMaker(key, parentRef, chaValue, refProj);
+            let promises = await batchUpdateDatabase([updateObj], db);
+            await tryPromises(promises);
         });
         submitChaNameBtn.text('Submit');
         let cancelChaNameBtn = DOMmaker('button', 'cancelChaNameBtn');
@@ -363,7 +355,6 @@ function DisplayCharacters(){
         editChaNameDiv.append([btnHolderLeft, btnHolderRight, editChaNameBtn]);
         characterDiv.append(characterField, langNameField, editChaNameDiv);
 
-        //new phiz div
         let newPhizDiv = DOMmaker('div', 'newPhizDiv');
         newPhizDiv.css({
             'max-width':'200px',
@@ -605,11 +596,7 @@ function DisplayCharacters(){
                 updateValue[phizNamePropName] = newPhizName;
                 let updateObj = updateObjMaker(phizKey, parentRefPath, updateValue, refProj);
                 let promises = await batchUpdateDatabase([updateObj], db);
-                try{
-                    await Promise.all(promises);
-                }catch(error){
-                    console.error(error);
-                }
+                await tryPromises(promises);
                 // console.log(`newPhizName: ${newPhizName}`);
             });
             let cancelModifyPhizNameBtn = DOMmaker('button', 'cancelModifyPhizNameBtn');
@@ -763,11 +750,7 @@ function setEditDiv(key, parentPath, orderPropName, obj) {
         if (needUpdate) {
             let updateObj = updateObjMaker(key, parentPath, updateValue, refProj);
             let promises = await batchUpdateDatabase([updateObj], db);
-            try {
-                await Promise.all(promises);
-            } catch (error) {
-                console.error(error);
-            }
+            await tryPromises(promises);
         }
     });
     let delBtn = objDiv.find('.objDelButton');
@@ -1403,11 +1386,7 @@ async function DisplayDialogs(dialogDivContainer) {
                             let updateList = [];
                             updateList.push(updateObjMaker(key, nowRefPath, updateObj, refProj));
                             let promises = await batchUpdateDatabase(updateList, db);
-                            try{
-                                await Promise.all(promises);
-                            }catch(error){
-                                console.error(error);
-                            }
+                            await tryPromises(promises);
                         }
                         DisplayTalk(mainLangDiv, mainLang);
                         DisplayTalk(subLangDiv, subLang);
@@ -1436,11 +1415,7 @@ async function DisplayDialogs(dialogDivContainer) {
                             let updateList = [];
                             updateList.push(updateObjMaker(key, nowRefPath, updateObj, refProj));
                             let promises = await batchUpdateDatabase(updateList, db);
-                            try{
-                                await Promise.all(promises);
-                            }catch(error){
-                                console.error(error);
-                            }
+                            await tryPromises(promises);
                         }
                         DisplayTalk(mainLangDiv, mainLang);
                     }
@@ -1457,11 +1432,7 @@ async function DisplayDialogs(dialogDivContainer) {
                         updateObj['labelName'] = input;
                         updateObj = updateObjMaker(key, nowRefPath, updateObj, refProj)
                         let promises = await batchUpdateDatabase([updateObj], db);
-                        try{
-                            await Promise.all(promises);
-                        }catch(error){
-                            console.error(error);
-                        }
+                        await tryPromises(promises);
                     }
                     EditingLabelElements.forEach(element=>{
                         $(element).removeClass('editing');
@@ -1667,11 +1638,7 @@ async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
         throw new Error("parentRef不是指向object，也不是undefined")        
     }
     promises.push(set(push(getRef(parentRef)), obj));
-    try{
-        await Promise.all(promises);
-    }catch(error){
-        console.error(error);
-    }
+    await tryPromises(promises);
 }
 
 
