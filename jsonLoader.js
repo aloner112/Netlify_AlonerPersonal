@@ -294,7 +294,7 @@ function DisplayCharacters(){
         let objDiv = $(`.objDiv[key=${key}]`);
         objDiv.css({
             'display':'grid', 
-            'grid-template-columns':'30px 150px 200px calc( 100vw - 530px)'
+            'grid-template-columns':'30px 150px 200px calc( 100vw - 550px)'
         });
         let objContentDiv = objDiv.find('.objContentDiv');
         objContentDiv.css({
