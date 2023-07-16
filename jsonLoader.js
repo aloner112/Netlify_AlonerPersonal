@@ -291,7 +291,9 @@ function DisplayCharacters(){
             'width':'150px',
             'min-width':'150px',
             'background-color':'#dddddd',
-            'grid-column': '1 / 2'
+            'grid-column': '1 / 2',
+            'display':'grid',
+            'grid-template-rows':'1fr 30px'
         })
         
         let characterField = makeEditableTxtField(obj, characterItemName, 'name', 'input');
@@ -353,7 +355,32 @@ function DisplayCharacters(){
         editChaNameBtn.click(()=>ChaClassesAddEditing());
         editChaNameBtn.text('Edit Name');
         editChaNameDiv.append([btnHolderLeft, btnHolderRight, editChaNameBtn]);
-        characterDiv.append(characterField, langNameField, editChaNameDiv);
+        let delChaBtn = DOMmaker('button', 'delChaBtn');
+        delChaBtn.text('Delete');
+        delChaBtn.css({
+            'background-color': 'red',
+            'display':'inline-block',
+            'width':'142px'
+        });
+        delChaBtn.click(async function(){
+           await deleteDataWithOrder(key, orderProp, parentRef, db, project, refProj); 
+        });
+        let addChaBelowBtn = DOMmaker('button', 'addChaBelowBtn');
+        addChaBelowBtn.text('▼ add character');
+        addChaBelowBtn.css({'display':'inline-block'});
+        
+        let characterUpDiv = DOMmaker('div', 'characterUpDiv');
+        characterUpDiv.css({
+           'grid-row':'1' 
+        });
+        characterUpDiv.append(characterField, langNameField, editChaNameDiv, delChaBtn);
+        let characterDownDiv = DOMmaker('div', 'characterDownDiv');
+        characterDownDiv.css({
+           'grid-row':'2' 
+        });
+        characterDownDiv.append([addChaBelowBtn]);
+        
+        characterDiv.append([characterUpDiv, characterDownDiv]);
 
         let newPhizDiv = DOMmaker('div', 'newPhizDiv');
         newPhizDiv.css({
