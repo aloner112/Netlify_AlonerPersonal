@@ -5,7 +5,7 @@ import {getStorage, ref as storageRef, uploadBytes, getDownloadURL
 import { app, auth } from "/auth.js";
 import { DateToString, StringToDate, DateToStringTime,
     DateToStringDate } from "/StringTimeHelper.js"
-import{DisplayListObject, DisplayTitle, makeDropdownWithStringArray, DOMmaker, MakeEditDiv, MakeOrderDiv} from "/ListDisplayer.js";
+import{DisplayListObject, DisplayTitle, DisplayObjsWithoutEditDiv, makeDropdownWithStringArray, DOMmaker, MakeEditDiv, MakeOrderDiv} from "/ListDisplayer.js";
 import{ObjectOrderAdd, getDataByPath, updateObjMaker, batchUpdateDatabase, CheckObject,
     isObject, orderObjectKeysByProp, deleteDataWithOrder}from "/DatabaseUtils.js"
 
@@ -253,9 +253,10 @@ function DisplayCharacters(){
     });
     langDiv.append(langTxt, langSelect);
     listDivContainer.append(langDiv);
-    let characterList = DisplayListObject(parentRef, objName, orderProp, project);
+    let titleDiv = DisplayTitle(objName);
+    let characterList = DisplayObjsWithoutEditDiv(parentRef, objName, orderProp, project);
     
-    listDivContainer.append(characterList);
+    listDivContainer.append([titleDiv, characterList]);
     // let titleDiv = DisplayTitle(objName);
     // listDivContainer.append([characterList]);
     dataContent.append([listDivContainer]);
@@ -265,51 +266,51 @@ function DisplayCharacters(){
         let characterName = obj.name;
         
         setOrderDiv(key, parentRef, orderProp, obj);
-        setEditDiv(key, parentRef, orderProp, obj);
+        // setEditDiv(key, parentRef, orderProp, obj);
         
         let objDiv = $(`.objDiv[key=${key}]`);
         objDiv.css({
             'display':'grid', 
-            'grid-template-columns':'30px 150px 200px calc( 100vw - 730px) 200px'
+            'grid-template-columns':'30px 150px 200px calc( 100vw - 530px)'
             // 'grid-template-columns':'30px 150px 200px calc( 100vw - 580px) 200px'
         });
-        let editDiv = objDiv.find('.objEditDiv');
-        editDiv.css({
-            'grid-column': '5 / 6',
-            'display':'grid',
-            'grid-template-rows':'5px 30px 30px 30px 30px 5px'
-        });
-        let editBtn = objDiv.find('.objEditButton');
-        editBtn.css({
-            'box-sizing':'content-box',
-            'grid-column': '2/6',
-            'grid-row':'2'
-        });
-        let delBtn = objDiv.find('.objDelButton');
-        delBtn.css({
-            'background-color':'red',
-            'box-sizing':'content-box',
-            'grid-column': '2/6',
-            'grid-row':'4'
-        });
-        let objSubmitBtn = objDiv.find('.objSubmitButton');
-        objSubmitBtn.css({
-            'box-sizing':'content-box',
-            'grid-column': '2/6',
-            'grid-row':'3'
-        });
-        let cancelBtn = objDiv.find('.objCancelEditButton');
-        cancelBtn.css({
-            'box-sizing':'content-box',
-            'grid-column': '2/6',
-            'grid-row':'2'
-        });
-        let addBelowBtn = objDiv.find('.objAddBelowBtn');
-        addBelowBtn.css({
-            'box-sizing':'content-box',
-            'grid-column': '2/6',
-            'grid-row':'5 / 6'
-        });
+        // let editDiv = objDiv.find('.objEditDiv');
+        // editDiv.css({
+        //     'grid-column': '5 / 6',
+        //     'display':'grid',
+        //     'grid-template-rows':'5px 30px 30px 30px 30px 5px'
+        // });
+        // let editBtn = objDiv.find('.objEditButton');
+        // editBtn.css({
+        //     'box-sizing':'content-box',
+        //     'grid-column': '2/6',
+        //     'grid-row':'2'
+        // });
+        // let delBtn = objDiv.find('.objDelButton');
+        // delBtn.css({
+        //     'background-color':'red',
+        //     'box-sizing':'content-box',
+        //     'grid-column': '2/6',
+        //     'grid-row':'4'
+        // });
+        // let objSubmitBtn = objDiv.find('.objSubmitButton');
+        // objSubmitBtn.css({
+        //     'box-sizing':'content-box',
+        //     'grid-column': '2/6',
+        //     'grid-row':'3'
+        // });
+        // let cancelBtn = objDiv.find('.objCancelEditButton');
+        // cancelBtn.css({
+        //     'box-sizing':'content-box',
+        //     'grid-column': '2/6',
+        //     'grid-row':'2'
+        // });
+        // let addBelowBtn = objDiv.find('.objAddBelowBtn');
+        // addBelowBtn.css({
+        //     'box-sizing':'content-box',
+        //     'grid-column': '2/6',
+        //     'grid-row':'5 / 6'
+        // });
         let objContentDiv = objDiv.find('.objContentDiv');
         objContentDiv.css({
             'grid-column': '2 / 5'
@@ -326,11 +327,46 @@ function DisplayCharacters(){
         let characterField = makeEditableTxtField(obj, characterItemName, 'name', 'input');
         let langNameKey = `name${nowDramaLanguages[0]}`;
         let langNameField = makeEditableTxtField(obj, LangNameItemName, langNameKey, 'input');
-        characterDiv.append(characterField, langNameField);
+        let editChaNameDiv = DOMmaker('div', 'editChaNameDiv');
+        editChaNameDiv.css({
+            'display':'grid',
+            'mix-width':'150px',
+            'max-width':'150px',
+            'grid-template-columns':'4px 69px 4px 69px 4px'            
+        })
+        let editChaClasses = ['submitChaNameBtn', 'cancelChaNameBtn', 'editChaNameBtn'];
+        function ChaClassesAddEditing(){
+            editChaClasses.forEach(thisClass=>{
+                $(`.objDiv[key=${key}]`).find(`.${thisClass}`).addClass('editing');
+            });
+        }
+        function ChaClassesRemoveEditing(){
+            editChaClasses.forEach(thisClass=>{
+                $(`.objDiv[key=${key}]`).find(`.${thisClass}`).removeClass('editing'); 
+            });
+        }
+        let btnHolderLeft = DOMmaker('div', 'btnHolder1of2');
+        let btnHolderRight = DOMmaker('div', 'btnHolder2of2');
+        let submitChaNameBtn = DOMmaker('button', 'submitChaNameBtn');
+        submitChaNameBtn.click(async function(){
+            ChaClassesRemoveEditing();
+        });
+        submitChaNameBtn.text('Submit');
+        let cancelChaNameBtn = DOMmaker('button', 'cancelChaNameBtn');
+        cancelChaNameBtn.text('Cancel');
+        cancelChaNameBtn.click(()=>ChaClassesRemoveEditing());
+        btnHolderLeft.append(submitChaNameBtn);
+        btnHolderRight.append(cancelChaNameBtn);
+        let editChaNameBtn = DOMmaker('button', 'editChaNameBtn');
+        editChaNameBtn.click(()=>ChaClassesAddEditing());
+        editChaNameBtn.text('Edit Name');
+        editChaNameDiv.append([btnHolderLeft, btnHolderRight, editChaNameBtn]);
+        characterDiv.append(characterField, langNameField, editChaNameDiv);
 
         //new phiz div
         let newPhizDiv = DOMmaker('div', 'newPhizDiv');
         newPhizDiv.css({
+            'max-width':'200px',
             'grid-column': '2 / 3'
         })
         let imgPreview = DOMmaker('img', 'imgPreview');
@@ -558,14 +594,15 @@ function DisplayCharacters(){
                 DOMs.forEach(dom=>{
                     dom.removeClass('editing');
                 });
+                let phizNamePropName = 'name';
                 let parentRefPath = `${parentRef}/${key}/${phizFolderName}`;
                 let thisPhizObj = project[parentRef][key][phizFolderName][phizKey];
-                let nowPhizName = thisPhizObj.name;
                 let newPhizName = $(`.phizDiv[key=${phizKey}]`).find('.phizNameInput').val();
+                let nowPhizName = thisPhizObj[phizNamePropName];
                 let updateValue = {};
                 if(nowPhizName === newPhizName){return}
                 if(nowPhizName === ''){return}
-                updateValue['name'] = newPhizName;
+                updateValue[phizNamePropName] = newPhizName;
                 let updateObj = updateObjMaker(phizKey, parentRefPath, updateValue, refProj);
                 let promises = await batchUpdateDatabase([updateObj], db);
                 try{

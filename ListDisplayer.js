@@ -9,7 +9,7 @@ export function DisplayListObject(parentPath, objName, orderPropName, projectObj
     return [titleDiv, objDivs];
 }
 
-function DisplayObjs(parentPath, objName, orderPropName, projectObject, objTypes) {
+export function DisplayObjs(parentPath, objName, orderPropName, projectObject, objTypes) {
     let parentObj = getDataByPath(parentPath, projectObject);
     let keys = Object.keys(parentObj);
     keys = keys.sort((a, b)=>{
@@ -24,6 +24,24 @@ function DisplayObjs(parentPath, objName, orderPropName, projectObject, objTypes
         let objContentDiv = $('<div>').addClass('objContentDiv');
         let editDiv = MakeEditDiv(key, objName, objTypes);
         objDiv.append([orderDiv, objContentDiv, editDiv]);
+        objDivContainer.append(objDiv);
+    })
+    return objDivContainer;
+}
+export function DisplayObjsWithoutEditDiv(parentPath, objName, orderPropName, projectObject) {
+    let parentObj = getDataByPath(parentPath, projectObject);
+    let keys = Object.keys(parentObj);
+    keys = keys.sort((a, b)=>{
+        return parentObj[a][orderPropName] - parentObj[b][orderPropName];
+    })
+    
+    let objDivContainer = $('<div>').addClass('objDivContainer');
+    keys.forEach(key =>{
+        let objDiv = $('<div>').addClass('objDiv');
+        objDiv.attr('key', key);
+        let orderDiv = MakeOrderDiv();
+        let objContentDiv = $('<div>').addClass('objContentDiv');
+        objDiv.append([orderDiv, objContentDiv]);
         objDivContainer.append(objDiv);
     })
     return objDivContainer;
