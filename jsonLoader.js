@@ -262,6 +262,21 @@ function DisplayCharacters(){
     langDiv.append(langTxt, langSelect);
     listDivContainer.append(langDiv);
     let titleDiv = DisplayTitle(objName);
+    let addNewCharacterBtn = titleDiv.find('.listTitleAddNewObjectButton');
+    addNewCharacterBtn.click(async function(){
+        await addNewCharacter();
+    });
+    async function addNewCharacter(targetOrder){
+        let newChaName = emptyCharacter.name;
+        // console.log(`is project[parentRef] undefined ? ${project[parentRef] === undefined}`);
+        
+        newChaName = findAvailableName(newChaName, 'name', project[parentRef]);
+        let newCharacter = Object.assign({}, emptyCharacter);
+        newCharacter.name = newChaName;
+        await addDataWithOrder(newCharacter, parentRef, orderProp, 'name', targetOrder);
+    }
+    
+    
     let characterList = DisplayObjsWithoutEditDiv(parentRef, objName, orderProp, project);
     
     listDivContainer.append([titleDiv, characterList]);
@@ -368,6 +383,11 @@ function DisplayCharacters(){
         let addChaBelowBtn = DOMmaker('button', 'addChaBelowBtn');
         addChaBelowBtn.text('▼ add character');
         addChaBelowBtn.css({'display':'inline-block'});
+        addChaBelowBtn.click(async function(){
+            let thisOrder = project[parentRef][key][orderProp];
+            let targetOrder = parseInt(thisOrder, 10) + 1;
+            await addNewCharacter(targetOrder);
+        });
         
         let characterUpDiv = DOMmaker('div', 'characterUpDiv');
         characterUpDiv.css({
@@ -1498,8 +1518,8 @@ async function DisplayDialogs(dialogDivContainer) {
         dialogDivContainer.append(dialogDiv);
         
         
-        let speakerDiv = DOMmaker('div', 'speakerDiv');
-        let speechDiv = DOMmaker('div', 'speechDiv');
+        // let speakerDiv = DOMmaker('div', 'speakerDiv');
+        // let speechDiv = DOMmaker('div', 'speechDiv');
         
     })
 }
@@ -1532,12 +1552,6 @@ function generateNewDialog(dialogType){
     }
     return dialogToAdd;
 }
-
-
-
-
-
-
 
 function DivsSameWidth(divs){
     let divWidths = [];
@@ -1628,7 +1642,7 @@ async function deleteDrama(key){
     await deleteDataWithOrder(key, 'dramaOrder', refDramas, db, project, refProj);
 }
 
-async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
+async function addDataWithOrder(obj, parentRef, orderPropName, uniquePropName, targetOrder){
     let updateList = [];
     let promises = [];
     let parentObj = getDataByPath(parentRef, project);
@@ -1721,19 +1735,17 @@ function getFileExtension(fileName) {
     return fileName.split('.').pop();
 }
 
-// function makeDropdownWithStringArray(array){
-//     let dropdown = $('<select>');
-//     for(let i=0; i<array.length; i++){
-//         let option = $('<option>');
-//         option.text(array[i]);
-//         option.val(array[i]);
-//         dropdown.append(option);
-//     }
-//     return dropdown;
-// }
-//
-// function DOMmaker(DOMtype, DOMclass, DOMid){
-//     let dom = $('<' + DOMtype + '>').addClass(DOMclass);
-//     if(DOMid !== undefined){dom.attr('id', DOMid);}
-//     return dom;
-// }
+function findAvailableName(newName, propName, parentObj){
+    let counter = 1;
+    let availableName = newName;
+    
+    while(isPropertyValueTaken(availableName, propName, parentObj)){
+        availableName = newName + counter;
+        counter++;
+    }
+    return availableName;
+}
+function isPropertyValueTaken(value, propName, parentObj){
+    return Object.values(parentObj).some(obj => obj[propName] === value);
+    // return parentObj.some(obj => obj[propName] === value);
+}
