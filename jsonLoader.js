@@ -312,6 +312,32 @@ function DisplayCharacters(){
         })
         
         let characterField = makeEditableTxtField(obj, characterItemName, 'name', 'input');
+        let chaNameInput = characterField[2];
+        chaNameInput.on('input', function(){
+            let parentDiv = $(`.objDiv[key=${key}]`);
+            let _submitBtn = parentDiv.find('.submitChaNameBtn');
+            let newChaName = chaNameInput.val();
+            let chaExist = isPropertyValueTaken(newChaName, 'name', project[parentRef]);
+            let _chaNameErr = parentDiv.find('.chaNameError');
+            if(chaExist){
+                if(newChaName === project[parentRef][key]['name']){
+                    _chaNameErr.css('display', 'none');
+                    _submitBtn.prop('disabled', false);
+                }else{
+                    _chaNameErr.css('display', 'block');
+                    _submitBtn.prop('disabled', true);                    
+                }
+            }else{
+                _chaNameErr.css('display', 'none');
+                _submitBtn.prop('disabled', false);
+            }
+        });
+        let chaNameError = DOMmaker('div', 'chaNameError');
+        chaNameError.css({
+            'color': 'red',
+            'display': 'none'
+        });
+        chaNameError.text('Character already exist');
         let langNameKey = `name${nowDramaLanguages[0]}`;
         let langNameField = makeEditableTxtField(obj, LangNameItemName, langNameKey, 'input');
         let editChaNameDiv = DOMmaker('div', 'editChaNameDiv');
@@ -343,8 +369,10 @@ function DisplayCharacters(){
             let nowChaName = obj[chaNameKey];
             let nowLangName = obj[langNameKey];
             let parentDiv = $(`.objDiv[key=${key}]`)
-            let newChaName = parentDiv.find(`.txtInput[valueKey=${chaNameKey}]`).val();
-            let newLangName = parentDiv.find(`.txtInput[valueKey=${langNameKey}]`).val();
+            let chaNameInput = parentDiv.find(`.txtInput[valueKey=${chaNameKey}]`);
+            let langNameInput = parentDiv.find(`.txtInput[valueKey=${langNameKey}]`);
+            let newChaName = chaNameInput.val();
+            let newLangName = langNameInput.val();
             let chaValue = {};
             if(nowChaName !== newChaName){
                 if(newChaName !== ''){
@@ -356,6 +384,8 @@ function DisplayCharacters(){
                     chaValue[langNameKey] = newLangName;
                 }
             }
+            chaNameInput.val('');
+            langNameInput.val('');
             let updateObj = updateObjMaker(key, parentRef, chaValue, refProj);
             let promises = await batchUpdateDatabase([updateObj], db);
             await tryPromises(promises);
@@ -363,7 +393,18 @@ function DisplayCharacters(){
         submitChaNameBtn.text('Submit');
         let cancelChaNameBtn = DOMmaker('button', 'cancelChaNameBtn');
         cancelChaNameBtn.text('Cancel');
-        cancelChaNameBtn.click(()=>ChaClassesRemoveEditing());
+        cancelChaNameBtn.click(()=> {
+            ChaClassesRemoveEditing();
+            let chaNameKey = 'name';
+            let langNameKey = `name${nowDramaLanguages[0]}`;
+            let parentDiv = $(`.objDiv[key=${key}]`)
+            let chaNameInput = parentDiv.find(`.txtInput[valueKey=${chaNameKey}]`);
+            let langNameInput = parentDiv.find(`.txtInput[valueKey=${langNameKey}]`);
+            let nowChaName = obj[chaNameKey];
+            let nowLangName = obj[langNameKey];
+            chaNameInput.val(nowChaName);
+            langNameInput.val(nowLangName);
+        });
         btnHolderLeft.append(submitChaNameBtn);
         btnHolderRight.append(cancelChaNameBtn);
         let editChaNameBtn = DOMmaker('button', 'editChaNameBtn');
@@ -393,7 +434,7 @@ function DisplayCharacters(){
         characterUpDiv.css({
            'grid-row':'1' 
         });
-        characterUpDiv.append(characterField, langNameField, editChaNameDiv, delChaBtn);
+        characterUpDiv.append(characterField, langNameField, chaNameError, editChaNameDiv, delChaBtn);
         let characterDownDiv = DOMmaker('div', 'characterDownDiv');
         characterDownDiv.css({
            'grid-row':'2' 
@@ -450,12 +491,7 @@ function DisplayCharacters(){
             let phizKeys = orderObjectKeysByProp(obj[phizFolderName], orderProp);
             if(phizKeys === []){
                 return '';}
-            let phizNames = [];
-            phizKeys.forEach(phizKey =>{
-                phizNames.push(obj[phizFolderName][phizKey]['name']);
-            });
-            console.log(`value: ${value}`);
-            if(phizNames.includes(value)){
+            if(isPropertyValueTaken(value, 'name', obj[phizFolderName])){
                 return `phiz name '${value}' already exist`;
             }else{
                 if(value !== ''){
