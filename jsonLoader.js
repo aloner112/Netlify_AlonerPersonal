@@ -557,7 +557,7 @@ function DisplayCharacters(){
         addNewPhizBtn.click(async function () {
             let parentDiv = $(`.objDiv[key=${key}]`);
             let fileInput = parentDiv.find('.uploadImg');
-            console.log(`fileInput is undefined? ${fileInput === undefined}`);
+            // console.log(`fileInput is undefined? ${fileInput === undefined}`);
             let newPhizName = parentDiv.find('.newPhizNameInput').val();
             newPhizName = encodeURIComponent(newPhizName);
             let imgFile = fileInput.prop('files')[0];
@@ -566,7 +566,7 @@ function DisplayCharacters(){
             let imgRef = storageRef(storage, imgPath);
             await uploadBytes(imgRef, imgFile);
             let imgURL = await getDownloadURL(imgRef);
-            console.log(`imgURL = ${imgURL}`);
+            // console.log(`imgURL = ${imgURL}`);
             let phizObj = {
                 name: newPhizName,
                 url: imgURL
@@ -713,8 +713,8 @@ function DisplayCharacters(){
             delPhizBtn.click(async function(){
                deleteDataWithOrder(phizKey, orderProp, phizRef, db, project, refProj); 
             });
-
-            phizDiv.append([phizOrderDiv, phizImg, phizNameDiv, modifyPhizNameDiv]);
+            let br = $('<br>');
+            phizDiv.append([phizOrderDiv, phizImg, br, phizNameDiv, modifyPhizNameDiv]);
             phizDiv.append(delPhizBtn);
             phizListInnerDiv.append(phizDiv);
         });
@@ -1782,6 +1782,8 @@ function findAvailableName(newName, propName, parentObj){
     return availableName;
 }
 function isPropertyValueTaken(value, propName, parentObj){
-    return Object.values(parentObj).some(obj => obj[propName] === value);
+    if(isObject(parentObj)){
+        return Object.values(parentObj).some(obj => obj[propName] === value);
+    }else{return false;}
     // return parentObj.some(obj => obj[propName] === value);
 }
