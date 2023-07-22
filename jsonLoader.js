@@ -4,11 +4,11 @@ import {getStorage, ref as storageRef, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
 import { app, auth } from "/auth.js";
 import { DateToString, StringToDate, DateToStringTime,
-    DateToStringDate } from "/StringTimeHelper.js"
+    DateToStringDate } from "/StringTimeHelper.js";
 import{DisplayListObject, DisplayTitle, DisplayObjsWithoutEditDiv, makeDropdownWithStringArray, DOMmaker, MakeEditDiv, MakeOrderDiv} from "/ListDisplayer.js";
 import{ObjectOrderAdd, getDataByPath, updateObjMaker, batchUpdateDatabase, CheckObject,
-    isObject, orderObjectKeysByProp, deleteDataWithOrder}from "/DatabaseUtils.js"
-
+    isObject, orderObjectKeysByProp, deleteDataWithOrder}from "/DatabaseUtils.js";
+import{InputFindMatchData} from "/CommonUtils.js";
 auth.onAuthStateChanged(()=>{
     if(auth.currentUser){
         GetData();
@@ -273,7 +273,7 @@ function DisplayCharacters(){
         newChaName = findAvailableName(newChaName, 'name', project[parentRef]);
         let newCharacter = Object.assign({}, emptyCharacter);
         newCharacter.name = newChaName;
-        await addDataWithOrder(newCharacter, parentRef, orderProp, 'name', targetOrder);
+        await addDataWithOrder(newCharacter, parentRef, orderProp, targetOrder, 'name');
     }
     
     
@@ -1142,7 +1142,15 @@ async function DisplayDialogs(dialogDivContainer) {
     }
     let dialogKeys = Object.keys(dialogs);
     dialogKeys.sort((a, b)=> dialogs[a].order - dialogs[b].order);
-    
+
+    function resetSpeakerInput(key, nowRefPath) {
+        let thisObjDiv = $(`.objDiv[key='${key}']`);
+        let thisSpeakerInput = thisObjDiv.find(`.dialogSpeakerInput`);
+        let speakerRefPath = `${nowRefPath}/${key}/speaker`;
+        let nowSpeaker = getDataByPath(speakerRefPath, project);
+        thisSpeakerInput.val(decodeURIComponent(nowSpeaker));
+    }
+
     dialogKeys.forEach((key)=>{
         let nowRefPath = 'dramas/'+ currentDramaKey +'/dialogs';
         
@@ -1175,6 +1183,9 @@ async function DisplayDialogs(dialogDivContainer) {
                 speakerString.text(speakerValue);
                 let speakerInput = DOMmaker('input', 'dialogSpeakerInput').attr('key', key);
                 speakerInput.attr({type: 'string', value: speakerValue});
+                speakerInput.on('input', function(){
+                    InputFindMatchData(speakerInput, project['characters'] ,'name');
+                });
                 speakerDiv.append([speakerString, speakerInput]);
                 
                 let displayNameMain = dialogs[key]['displayName' + mainLang];
@@ -1377,6 +1388,7 @@ async function DisplayDialogs(dialogDivContainer) {
 
         cancelEditDialogBtn.click(async function(){
             DisplaySpeaker();
+            $('#nameList').remove();
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
@@ -1397,6 +1409,7 @@ async function DisplayDialogs(dialogDivContainer) {
                         let mainLangDiv = $(`.dialogTalkDivAll[key='${key}']`);
                         DisplayTalk(mainLangDiv, mainLang);
                     }
+                    resetSpeakerInput(key, nowRefPath);
                     EditingTalkElements.forEach(element =>{
                         $(element).removeClass('editing');
                     });
@@ -1420,6 +1433,7 @@ async function DisplayDialogs(dialogDivContainer) {
         submitDialogBtn.text('Submit');
         submitDialogBtn.click(async function(){
             DisplaySpeaker();
+            $('#nameList').remove();
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
@@ -1532,6 +1546,7 @@ async function DisplayDialogs(dialogDivContainer) {
         delDialogBtn.attr('order', dialogs[key].order);
         delDialogBtn.text('Delete');
         $(delDialogBtn).click(async function(){
+            $('#nameList').remove();
             await deleteDataWithOrder(key, 'order', nowRefPath, db, project, refProj);
         });
         let addDialogBelowSelect = makeDropdownWithStringArray(dialogTypes);
@@ -1544,7 +1559,7 @@ async function DisplayDialogs(dialogDivContainer) {
         addDialogBelowBtn.click(async function(){
            let newDialog = generateNewDialog(addDialogBelowSelect.val());
             await addDataWithOrder(newDialog, refDramas + '/' + currentDramaKey + '/dialogs',
-                'order', dialogs[key].order + 1);
+                'order', dialogs[key].order + 1, undefined);
         });
         
         editDiv.append([editDialogBtn, submitDialogBtn, cancelEditDialogBtn,
@@ -1678,7 +1693,7 @@ async function deleteDrama(key){
     await deleteDataWithOrder(key, 'dramaOrder', refDramas, db, project, refProj);
 }
 
-async function addDataWithOrder(obj, parentRef, orderPropName, uniquePropName, targetOrder){
+async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
     let updateList = [];
     let promises = [];
     let parentObj = getDataByPath(parentRef, project);

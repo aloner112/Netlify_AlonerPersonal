@@ -58,7 +58,17 @@ body{
     margin-right: 20px;
     display: flex;
     position: relative;
+}
 
+#nameList{
+    background-color: white;
+    border: #494949;
+}
+.nameListName{
+    background-color: white;
+}
+.nameListName:hover{
+    background-color: #dd7272;
 }
 
 .phizNameDiv{
