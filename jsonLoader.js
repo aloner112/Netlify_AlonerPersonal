@@ -1172,21 +1172,186 @@ async function DisplayDialogs(dialogDivContainer) {
         orderTxt.text(dialogs[key].order);
         orderDiv.append([orderUpBtn, orderTxt, orderDownBtn]);
         dialogDiv.append(orderDiv);
+
+        // function checkSpeaker(key){
+        //     if(dialogs[key]['type'] !== 'talk'){return;}
+        //     let thisObjDiv = $(`.objDiv[key=${key}]`);
+        //     // check speaker an exist character
+        //     // let thisSpeakerDiv = thisObjDiv.find('.dialogSpeakerString');
+        //     let thisSpeakerDiv = thisObjDiv.find('.dialogSpeakerString');
+        //     let speakerVal = thisSpeakerDiv.text();
+        //     // console.log(speakerVal);
+        //     let characterObj = undefined;
+        //     let characterKeys = Object.keys(project['characters']);
+        //     for(let i = 0; i < characterKeys.length; i++){
+        //         let nowKey = characterKeys[i];
+        //         console.log(`speakerVal = ${speakerVal}`);
+        //         if(project['characters'][nowKey]['name'] === encodeURIComponent(speakerVal)){
+        //             characterObj = project['characters'][nowKey];
+        //             break;
+        //         }
+        //     }
+        //     console.log(`speakerVal = ${speakerVal}`);
+        //     console.log(`thisSpeakerDiv is undefined? ${thisSpeakerDiv === undefined}`);
+        //     let speakerError = thisObjDiv.find('speakerError');
+        //     if(characterObj === undefined){
+        //         speakerError.css('display', 'inline-block');
+        //         speakerError.text("speaker is not an exist character");
+        //     }else{
+        //         speakerError.css('display', 'none');
+        //     }
+        // }
         
         switch(dialogs[key].type){
             case 'talk':
+                let characterParentObj = project['characters'];
+                let thisCharacter = undefined;
                 let speakerDiv = DOMmaker('div', 'dialogSpeakerDiv').attr('key', key);
+                speakerDiv.css('text-align', 'center');
                 
-                let speakerValue = dialogs[key].speaker === ""? 'no speaker': dialogs[key].speaker;
-                speakerValue = decodeURIComponent(speakerValue);
-                let speakerString = DOMmaker('div', 'dialogSpeakerString').attr('key', key)
-                speakerString.text(speakerValue);
-                let speakerInput = DOMmaker('input', 'dialogSpeakerInput').attr('key', key);
-                speakerInput.attr({type: 'string', value: speakerValue});
-                speakerInput.on('input', function(){
-                    InputFindMatchData(speakerInput, project['characters'] ,'name');
+                let speakerField = makeEditableTxtField(dialogs[key], 'speaker', 'speaker', 'input');
+                let speakerTitle = speakerField[0];
+                speakerTitle.text('speaker:');
+                let speakerTxt = speakerField[1];
+                let speakerVal = dialogs[key]['speaker'];
+                if(speakerVal === undefined || speakerVal === ''){
+                    speakerTxt.text('no speaker');
+                }
+                let speakerError = DOMmaker('div', 'errorTxt');
+                speakerError.attr('key', key);
+                speakerError.addClass('speakerError');
+                speakerField.push(speakerError);
+                if(isPropertyValueTaken(speakerVal, 'name', characterParentObj)){
+                    let thisCharacterKey = Object.keys(characterParentObj).find(chaKey => characterParentObj[chaKey]['name'] === speakerVal);
+                    thisCharacter = characterParentObj[thisCharacterKey];
+                    speakerError.text('');
+                    speakerError.css('display', 'none');
+                }else{
+                    speakerError.text('speaker is not an exist character');
+                    speakerError.css('display', 'block');
+                }
+                speakerDiv.append(speakerField);
+                
+                let phizField = makeEditableTxtField(dialogs[key], 'phiz', 'emotion', 'input');
+                let phizTitle = phizField[0];
+                phizTitle.text('phiz:');
+                phizTitle.css({
+                    'border-top':'1px dashed #494949',
+                    'margin-top':'5px',
+                    'padding-top':'5px'
                 });
-                speakerDiv.append([speakerString, speakerInput]);
+                let phizTxt = phizField[1];
+                if(phizTxt.text()===''){phizTxt.text('phiz not set');}
+                let phizError = DOMmaker('div', 'errorTxt');
+                phizError.attr('key', key);
+                phizError.addClass('phizError');
+                phizField.push(phizError);
+                speakerDiv.append(phizField);
+
+                let phizImg = $('<img>').addClass('phizImg');
+                let phizImgError = DOMmaker('div', 'errorTxt');
+                phizImgError.addClass('phizImgError');
+                phizImgError.attr('key', key);
+                speakerDiv.append(phizImg, phizImgError);
+                
+                if(thisCharacter === undefined){
+                    phizError.text('phiz is noneffective due to speaker is not an exist character');
+                }else{
+                    let emotion = dialogs[key]['emotion'];
+                    let phizKey = Object.keys(thisCharacter['phiz']).find(thisPhizKey => thisCharacter['phiz'][thisPhizKey]['name'] === emotion);
+                    if(phizKey === undefined){
+                        phizError.text('character has no such phiz');
+                    }else{
+                        phizError.text('');
+                        phizError.css({'display': 'none'});
+                        let phizObj = thisCharacter['phiz'][phizKey];
+                        phizImg.attr('src', phizObj['url']);
+                        phizImg.css({
+                            'max-width':'200px',
+                            'max-height':'200px'
+                        });
+                    }
+                }
+                // let speakerValue = dialogs[key].speaker;
+                // let speakerString = DOMmaker('div', 'dialogSpeakerString').attr('key', key);
+                // let speakerStringText = speakerValue === "" ? "no speaker" : decodeURIComponent(speakerValue); 
+                // speakerString.text(speakerStringText);
+                // let speakerInput = DOMmaker('input', 'dialogSpeakerInput').attr('key', key);
+                // speakerInput.attr({type: 'string', value: speakerStringText,
+                //     placeholder: 'character name'});
+                // speakerInput.on('input', function(){
+                //     InputFindMatchData(speakerInput, project['characters'] ,'name');
+                // });
+                // let speakerError = DOMmaker('div', 'errorTxt');
+                // speakerError.attr('key', key);
+                // speakerError.addClass('speakerError');
+                // let phizTxt = DOMmaker('div', 'phizTxt');
+                // phizTxt.css({
+                //     'margin-left':'5px',
+                //     'margin-right':'5px'
+                // })
+                // let phizInput = DOMmaker('input', 'txtInput');
+                // phizInput.addClass('phizInput');
+                // phizInput.attr('key', key);
+                // let phizError = DOMmaker('div', 'errorTxt');
+                // phizError.attr('key', key);
+                // phizError.addClass('phizError');
+                // let phizImg = $('<img>').addClass('phizImg');
+                // let phizImgError = DOMmaker('div', 'errorTxt');
+                // phizImgError.addClass('phizImgError');
+                // phizImgError.attr('key', key);
+                //
+                // speakerDiv.append([speakerString, speakerInput, speakerError,
+                //     phizTxt, phizError, phizImg, phizImgError]);
+                
+                // is speaker an exist character?
+                // if(speakerValue !== ''){
+                //     let characterParentObj = project['characters'];
+                //     let speakerCharacterKey = Object.keys(characterParentObj).find(key => characterParentObj[key]['name'] === speakerValue);
+                //     if(speakerCharacterKey !== undefined){
+                //         let thisCharacter = characterParentObj[speakerCharacterKey];
+                //         speakerError.css('display', 'none');
+                //         phizTxt.css('display', 'block');
+                //         //如果有設定表情，就顯示表情
+                //         let phizProp = 'phiz';
+                //
+                //         if(dialogs[key]['emotion'] === undefined || dialogs[key]['emotion'] === ''){
+                //             phizTxt.text("phiz not set");
+                //         }else{
+                //             let phizValue = dialogs[key]['emotion'];
+                //             phizTxt.text(decodeURIComponent(phizValue));
+                //             phizInput.val(decodeURIComponent(phizValue));
+                //             // speakerString.after(speakerPhizTxt);
+                //             let phizKeys = Object.keys(thisCharacter[phizProp]);
+                //             console.log(`phizKeys = ${phizKeys}`);
+                //             let phizObjKey = phizKeys.find(phizKey => thisCharacter[phizProp][phizKey]['name'] === phizValue);
+                //             if(phizObjKey === undefined){
+                //                 // let phizNotExistError = DOMmaker('div', 'errorTxt');
+                //                 phizError.text('character does not has this phiz');
+                //                 phizImg.css('display', 'none');
+                //                 // speakerPhizTxt.after(phizNotExistError);
+                //             }else{
+                //                 // let phizImg = $('<img>').attr('src', `${thisCharacter[phizProp][phizObjKey].url}`);
+                //                 phizImg.attr('src', `${thisCharacter[phizProp][phizObjKey].url}`);
+                //                 phizImg.css({
+                //                     'display': 'block',
+                //                     'max-width': '200px',
+                //                     'max-height': '200px'
+                //                 });
+                //                 // speakerPhizTxt.after(phizImg);
+                //             }
+                //         }
+                //     }else{
+                //         // let speakerErrorTxt = $('<div>').addClass('errorTxt');
+                //         // speakerErrorTxt.addClass('speaker');
+                //         speakerError.text("speaker is not an exist character");
+                //         // speakerString.after(speakerErrorTxt);
+                //         let thingsToHide = [phizError, phizImg, phizImgError];
+                //         thingsToHide.forEach(thing =>{
+                //            $(thing).css('display', 'none'); 
+                //         });
+                //     }
+                // }
                 
                 let displayNameMain = dialogs[key]['displayName' + mainLang];
                 let displayNameSub = dialogs[key]['displayName' + subLang];
@@ -1278,10 +1443,15 @@ async function DisplayDialogs(dialogDivContainer) {
                 return;
         }
         
+        let speakerErrorTxtElements = [];
+        
         let EditingElements = [`.editDialogButton[key=${key}]`,
             `.submitDialogButton[key=${key}]`,
             `.cancelEditDialogButton[key=${key}]`,
-            `.delDialogButton[key=${key}]`];
+            `.delDialogButton[key=${key}]`,
+            `.errorTxt[key=${key}]`,
+            '.objTxt', '.txtInput', '.txtAreaInput'
+        ];
             
         
         let EditingTalkElements = [
@@ -1310,6 +1480,8 @@ async function DisplayDialogs(dialogDivContainer) {
             speakerVal = speakerVal === "" ? 'no speaker' : speakerVal;
             $(`.dialogSpeakerString[key=${key}]`).text(speakerVal);
         }
+
+        
         let editDialogBtn = DOMmaker('button', 'editDialogButton');
         editDialogBtn.attr('key', key);
         editDialogBtn.attr('order', dialogs[key].order);
@@ -1442,10 +1614,12 @@ async function DisplayDialogs(dialogDivContainer) {
             });
             switch(dialogs[key].type){
                 case 'talk':
-
                     if(nowShowingSubLanguage){
-                        let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
+                        let thisObjDiv = $(`.objDiv[key='${key}']`);
+                        let speaker = thisObjDiv.find(`.txtInput.speaker`).val();
                         speaker = encodeURIComponent(speaker);
+                        let phiz = thisObjDiv.find(`.txtInput.phiz`).val();
+                        phiz = encodeURIComponent(phiz);
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivLeft[key='${key}']`);
                         let mainLangDisplayName = mainLangDiv.find(
@@ -1471,6 +1645,8 @@ async function DisplayDialogs(dialogDivContainer) {
                         let dataSubLangSpeech = dialogs[key][`speech${subLang}`];
                         if(speaker !== dialogs[key]['speaker']){
                             updateObj['speaker']=  speaker; }
+                        if(phiz !== dialogs[key]['emotion']){
+                            updateObj['emotion']=  phiz; }
                         if(mainLangDisplayName !== dataMainLangDisplayName){
                             updateObj[`displayName${mainLang}`] = mainLangDisplayName;     }
                         if(mainLangSpeech !== dataMainLangSpeech){
@@ -1488,8 +1664,11 @@ async function DisplayDialogs(dialogDivContainer) {
                         DisplayTalk(mainLangDiv, mainLang);
                         DisplayTalk(subLangDiv, subLang);
                     }else{
-                        let speaker = $(`.dialogSpeakerInput[key="${key}"]`).val();
+                        let thisObjDiv = $(`.objDiv[key='${key}']`);
+                        let speaker = thisObjDiv.find(`.txtInput.speaker`).val();
                         speaker = encodeURIComponent(speaker);
+                        let phiz = thisObjDiv.find(`.txtInput.phiz`).val();
+                        phiz = encodeURIComponent(phiz);
                         let mainLang = nowDramaLanguages[0];
                         let mainLangDiv = $(`.dialogTalkDivAll[key='${key}']`);
                         let mainLangDisplayName = mainLangDiv.find(
@@ -1504,6 +1683,8 @@ async function DisplayDialogs(dialogDivContainer) {
                         let dataMainLangSpeech = dialogs[key][`speech${mainLang}`];
                         if(speaker !== dialogs[key]['speaker']){
                             updateObj['speaker']=  speaker; }
+                        if(phiz !== dialogs[key]['emotion']){
+                            updateObj['emotion']=  phiz; }
                         if(mainLangDisplayName !== dataMainLangDisplayName){
                             updateObj[`displayName${mainLang}`] = mainLangDisplayName;     }
                         if(mainLangSpeech !== dataMainLangSpeech){
@@ -1567,8 +1748,6 @@ async function DisplayDialogs(dialogDivContainer) {
 
         dialogDiv.append([editDiv]);
         dialogDivContainer.append(dialogDiv);
-        
-        
         // let speakerDiv = DOMmaker('div', 'speakerDiv');
         // let speechDiv = DOMmaker('div', 'speechDiv');
         
@@ -1703,10 +1882,10 @@ async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
         let lastOrder = parseInt(parentObj[lastKey][orderPropName], 10);
         if(targetOrder === undefined){
             targetOrder = lastOrder + 1;
-            console.log('沒有指定目標order，將目標order設為目前最大order+1')
+            console.log('沒有指定目標order，將目標order設為目前最大order+1');
         }else if(targetOrder > lastOrder + 1){
             targetOrder = lastOrder + 1;
-            console.log('目標order大於目前最大order+1，將目標order設為目前最大order+1')
+            console.log('目標order大於目前最大order+1，將目標order設為目前最大order+1');
         }
         obj[orderPropName] = targetOrder;
         for(let i = 0; i < objKeys.length; i++){
@@ -1722,12 +1901,12 @@ async function addDataWithOrder(obj, parentRef, orderPropName, targetOrder){
         if(updateList.length !== 0){
             promises = promises.concat(updateList.map(item=>{
                 return update(ref(db, item.refPath), item.updateList);
-            })        );
+            }));
         }
     }else if(parentObj === undefined){
         obj[orderPropName] = 1;
     }else{
-        throw new Error("parentRef不是指向object，也不是undefined")        
+        throw new Error("parentRef不是指向object，也不是undefined");      
     }
     promises.push(set(push(getRef(parentRef)), obj));
     await tryPromises(promises);
