@@ -1443,14 +1443,13 @@ async function DisplayDialogs(dialogDivContainer) {
                 return;
         }
         
-        let speakerErrorTxtElements = [];
+        let speakerErrorTxtElements = ['.objTxt', '.txtInput', '.txtAreaInput'];
         
         let EditingElements = [`.editDialogButton[key=${key}]`,
             `.submitDialogButton[key=${key}]`,
             `.cancelEditDialogButton[key=${key}]`,
             `.delDialogButton[key=${key}]`,
-            `.errorTxt[key=${key}]`,
-            '.objTxt', '.txtInput', '.txtAreaInput'
+            `.errorTxt[key=${key}]`            
         ];
             
         
@@ -1488,6 +1487,12 @@ async function DisplayDialogs(dialogDivContainer) {
         editDialogBtn.text('Edit');
 
         editDialogBtn.click(()=>{
+            
+            let thisObjDiv = $(`.objDiv[key='${key}']`);
+            speakerErrorTxtElements.forEach(element=>{
+                thisObjDiv.find(element).addClass('editing');
+            })
+            
             EditingElements.forEach(element =>{
                 $(element).addClass('editing');
             });
@@ -1561,6 +1566,12 @@ async function DisplayDialogs(dialogDivContainer) {
         cancelEditDialogBtn.click(async function(){
             DisplaySpeaker();
             $('#nameList').remove();
+
+            let thisObjDiv = $(`.objDiv[key='${key}']`);
+            speakerErrorTxtElements.forEach(element=>{
+                thisObjDiv.find(element).removeClass('editing');
+            })
+            
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
@@ -1606,6 +1617,11 @@ async function DisplayDialogs(dialogDivContainer) {
         submitDialogBtn.click(async function(){
             DisplaySpeaker();
             $('#nameList').remove();
+            let thisObjDiv = $(`.objDiv[key='${key}']`);
+            speakerErrorTxtElements.forEach(element=>{
+                thisObjDiv.find(element).removeClass('editing');
+            })
+            
             EditingElements.forEach(element =>{
                 $(element).removeClass('editing');
             });
