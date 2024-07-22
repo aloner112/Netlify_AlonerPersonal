@@ -52,21 +52,21 @@
         console.error('登入失敗:', error);
       });
   });
-  // btn_SignUp.addEventListener('click', async(event) => {
-  //   event.preventDefault();
-  //   createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential)=>{
-  //     // Signed in 
-  //     let user = userCredential.user;
-  //     alert("註冊成功");
-  //     // ...
-  //   })
-  //   .catch((error) => {
-  //     let errorCode = error.code;
-  //     let errorMessage = error.message;
-  //     alert("註冊失敗"+"\n"+errorCode + ": " +errorMessage);
-  //     // ..
-  //   });
-  // });
+  btn_SignUp.addEventListener('click', async(event) => {
+    event.preventDefault();
+    createUserWithEmailAndPassword(auth, email.value, password.value).then((userCredential)=>{
+      // Signed in 
+      let user = userCredential.user;
+      alert("註冊成功");
+      // ...
+    })
+    .catch((error) => {
+      let errorCode = error.code;
+      let errorMessage = error.message;
+      alert("註冊失敗"+"\n"+errorCode + ": " +errorMessage);
+      // ..
+    });
+  });
 
   btn_LogOut.addEventListener('click', async(event)=>{
     await signOut(auth);
