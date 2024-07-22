@@ -28,7 +28,7 @@
   const authForm = document.querySelector('#authForm');
   const loggedInUserBlock = document.querySelector('#loggedInUserBlock');
   const btn_LogIn = document.querySelector('#btn_LogIn');
-  // const btn_SignUp = document.querySelector('#btn_SignUp');
+  const btn_SignUp = document.querySelector('#btn_SignUp');
   const btn_LogOut = document.querySelector('#btn_LogOut');
   const email = document.querySelector('#email');
   const password = document.querySelector('#password');
